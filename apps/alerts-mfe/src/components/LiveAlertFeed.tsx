@@ -137,7 +137,7 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
 
       <CardContent>
         {filteredAlerts.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 text-xs font-mono border border-dashed border-slate-800 rounded-lg">
+          <div className="p-8 text-center text-slate-400 text-xs font-mono border border-dashed border-slate-800 rounded-lg">
             No alerts match the selected criteria.
           </div>
         ) : (
@@ -175,7 +175,7 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
                         </span>
                       </h4>
                       <p className="text-xs text-slate-300 mt-0.5 font-sans">{alert.message}</p>
-                      <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono mt-1.5">
+                      <div className="flex items-center gap-3 text-[10px] text-slate-400 font-mono mt-1.5">
                         <span>Triggered: {alert.triggeredAt}</span>
                         <span>•</span>
                         <span>

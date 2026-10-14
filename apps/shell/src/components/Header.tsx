@@ -123,7 +123,7 @@ export function Header() {
                   ? 'text-emerald-400 animate-pulse'
                   : connectionStatus === 'CONNECTING' || connectionStatus === 'RECONNECTING'
                     ? 'text-amber-400 animate-pulse'
-                    : 'text-slate-500'
+                    : 'text-slate-400'
               }`}
             />
             <span className="font-mono text-[11px] font-semibold text-slate-300 hidden sm:inline">

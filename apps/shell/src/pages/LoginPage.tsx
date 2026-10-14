@@ -184,7 +184,7 @@ export function LoginPage() {
                   Username
                 </label>
                 <div className="relative">
-                  <UserIcon className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+                  <UserIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                   <Input
                     id="username-input"
                     type="text"
@@ -205,7 +205,7 @@ export function LoginPage() {
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                   <Input
                     id="password-input"
                     type="password"
@@ -266,7 +266,7 @@ export function LoginPage() {
         </Card>
 
         {/* Security notice */}
-        <p className="text-[11px] text-slate-500 text-center font-mono">
+        <p className="text-[11px] text-slate-400 text-center font-mono">
           Strict WCAG 2.2 AA • JWT Resource Guarded • Simulated Institutional Environment
         </p>
       </div>

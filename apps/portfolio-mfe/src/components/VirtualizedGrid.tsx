@@ -383,7 +383,7 @@ export function VirtualizedGrid({
               >
                 <span>{col.label}</span>
                 {col.sortField && (
-                  <span className="text-slate-500">
+                  <span className="text-slate-400">
                     {sortField === col.sortField && sortDirection === 'asc' ? (
                       <ArrowUp className="w-3 h-3 text-blue-400" />
                     ) : sortField === col.sortField && sortDirection === 'desc' ? (
@@ -408,7 +408,7 @@ export function VirtualizedGrid({
           }}
         >
           {virtualItems.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 text-xs font-mono">
+            <div className="p-8 text-center text-slate-400 text-xs font-mono">
               No holdings match current search filter &quot;{deferredFilter}&quot;.
             </div>
           ) : (

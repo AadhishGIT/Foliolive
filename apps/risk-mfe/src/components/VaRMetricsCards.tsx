@@ -62,7 +62,7 @@ export function VaRMetricsCards({
               unit="%"
               size={160}
             />
-            <div className="w-full flex justify-between text-[10px] font-mono text-slate-500 mt-1 border-t border-slate-800/60 pt-1.5">
+            <div className="w-full flex justify-between text-[10px] font-mono text-slate-400 mt-1 border-t border-slate-800/60 pt-1.5">
               <span>
                 Policy Limit: <strong>{pVaRThreshold.toFixed(1)}%</strong>
               </span>
@@ -99,7 +99,7 @@ export function VaRMetricsCards({
               unit="%"
               size={160}
             />
-            <div className="w-full flex justify-between text-[10px] font-mono text-slate-500 mt-1 border-t border-slate-800/60 pt-1.5">
+            <div className="w-full flex justify-between text-[10px] font-mono text-slate-400 mt-1 border-t border-slate-800/60 pt-1.5">
               <span>
                 Policy Limit: <strong>{hVaRThreshold.toFixed(1)}%</strong>
               </span>
@@ -136,7 +136,7 @@ export function VaRMetricsCards({
               unit="%"
               size={160}
             />
-            <div className="w-full flex justify-between text-[10px] font-mono text-slate-500 mt-1 border-t border-slate-800/60 pt-1.5">
+            <div className="w-full flex justify-between text-[10px] font-mono text-slate-400 mt-1 border-t border-slate-800/60 pt-1.5">
               <span>
                 Tail Loss Limit: <strong>{esThreshold.toFixed(1)}%</strong>
               </span>

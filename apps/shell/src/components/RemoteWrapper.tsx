@@ -77,7 +77,7 @@ export function RemoteLoadingFallback({ remoteName }: { remoteName: string }) {
     <div className="flex flex-col items-center justify-center p-12 border border-dashed border-slate-800 rounded-lg bg-slate-900/30">
       <Layers className="w-8 h-8 text-blue-500 animate-pulse mb-3" />
       <span className="text-sm font-medium text-slate-300">Loading {remoteName}...</span>
-      <span className="text-xs text-slate-500 mt-1">
+      <span className="text-xs text-slate-400 mt-1">
         Resolving Module Federation remote container
       </span>
     </div>
