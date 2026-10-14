@@ -8,6 +8,9 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc"
   },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
   "devDependencies": {
     "@foliolive/config": "workspace:*",
     "typescript": "^5.4.5"

@@ -125,6 +125,7 @@ Key architectural decisions and technical trade-offs are documented in [docs/adr
 - [ADR 0005: Backend Split: Java Core API + Node.js BFF](docs/adr/0005-backend-split-java-core-and-node-bff.md)
 - [ADR 0006: High-Frequency Grid Virtualization Approach](docs/adr/0006-grid-virtualization-approach.md)
 - [ADR 0007: Cloud Deployment Target: AWS Free Tier](docs/adr/0007-cloud-deployment-target-aws-free-tier.md)
+- [ADR 0008: Real-Time Risk Calculation: In-Memory BFF vs Core API Roundtrip](docs/adr/0008-realtime-risk-calculation-in-memory-bff-vs-core-api-roundtrip.md)
 
 ---
 
@@ -181,6 +182,75 @@ Additional container endpoints:
 - **Core API**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
 - **Prometheus**: [http://localhost:9090](http://localhost:9090)
 - **Grafana**: [http://localhost:3100](http://localhost:3100) (admin / admin)
+
+---
+
+## Demo User Accounts & Roles
+
+The system is pre-seeded with two demo accounts for live testing and institutional evaluation:
+
+| Username      | Password       | Role          | Permissions                                                                      |
+| :------------ | :------------- | :------------ | :------------------------------------------------------------------------------- |
+| `pm_demo`     | `Password123!` | `ROLE_PM`     | Full read/write access: modify risk limits, adjust positions, simulator controls |
+| `viewer_demo` | `Password123!` | `ROLE_VIEWER` | Read-only access: view portfolios, stream live prices, monitor risk & alerts     |
+
+Passwords are encrypted with BCrypt ($2a$10). Login requests are rate-limited on `/auth/login` (15 requests/min per IP) and issue a signed JWT access token (15-min expiry) plus an `httpOnly`, `SameSite=Lax` refresh cookie (`foliolive_refresh_token`, 7-day expiry).
+
+---
+
+## BFF Gateway & Real-Time Market Simulator
+
+The BFF service (`services/bff`, Port 4000) acts as the high-throughput gateway, market simulator, and real-time valuation engine:
+
+### 1. Market Simulator Engine
+
+- **Stochastic Process**: Geometric Brownian Motion (GBM) per instrument:
+  $$dS_t = \mu S_t dt + \sigma S_t dW_t$$
+  incorporating intraday sector correlation factors:
+  $$Z_{\text{effective}} = \sqrt{\rho} \cdot Z_{\text{sector}} + \sqrt{1 - \rho} \cdot Z_{\text{idiosyncratic}}$$
+- **Reproducibility**: Deterministic Mulberry32 PRNG with configurable seed (default: `42`).
+- **Instruments**: 27 instruments pre-configured across 5 sectors (Technology, Financials, Healthcare, Consumer Discretionary, Energy) and 3 asset classes (Equities, Fixed Income, Commodities).
+- **Update Frequency**: Standard mode (~8 ticks/sec across instruments, 100ms interval); dynamic **Stress Mode** ($\ge 100$ updates/sec, 10ms interval).
+
+### 2. Simulator Runtime Controls
+
+Control the simulator dynamically via REST:
+
+```bash
+# Enable high-frequency stress mode (100 updates/sec)
+curl -X POST http://localhost:4000/api/simulator/control \
+  -H "Content-Type: application/json" \
+  -d '{"stressMode": true}'
+
+# Inject a sector-wide shock event (-6% in Technology)
+curl -X POST http://localhost:4000/api/simulator/control \
+  -H "Content-Type: application/json" \
+  -d '{"triggerShock": true, "shockMagnitude": -0.06, "shockSector": "TECHNOLOGY"}'
+
+# Reset prices to initial seeds
+curl -X POST http://localhost:4000/api/simulator/control \
+  -H "Content-Type: application/json" \
+  -d '{"resetPrices": true}'
+```
+
+### 3. Real-Time WebSocket Telemetry (`/ws`)
+
+Connect to `ws://localhost:4000/ws?token=<ACCESS_TOKEN>`.
+
+- **Topic Subscriptions**:
+  - `prices`: Streaming market ticks across instruments.
+  - `portfolio:{portfolioId}`: Live portfolio valuation, cash balance, and P&L.
+  - `risk:{portfolioId}`: Live parametric 95%/99% VaR, gross exposure, and concentration.
+  - `alerts`: Instant alerts emitted when risk limits are breached or cleared.
+- **Animation-Frame Batching**: To prevent UI thread starvation at 100 ticks/sec, the BFF coalesces and broadcasts updates in animation-frame friendly 100ms batch envelopes (`BATCH` message type).
+- **Heartbeat & Resiliency**: Periodic ping/pong heartbeat (15s interval) and `bufferedAmount` backpressure detection to protect against slow clients.
+
+### 4. Aggregation Endpoints
+
+- `GET /api/portfolio-overview/:id`: Single round-trip composite payload (holdings, live valuations, risk metrics snapshot, active alerts).
+- `GET /api/market-overview`: Snapshot of all 27 instruments with 24h highs, lows, and changes.
+- `GET /api/portfolios`: Portfolio list with current mark-to-market summaries.
+- `GET /metrics`: Prometheus metrics scraper endpoint.
 
 ---
 

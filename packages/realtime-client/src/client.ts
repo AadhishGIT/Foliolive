@@ -2,11 +2,16 @@ import type {
   WebSocketClientMessage,
   WebSocketServerMessage,
   MarketTick,
-  PortfolioSummary,
-  Holding,
   PortfolioRiskSummary,
   AlertNotification,
+  PortfolioUpdateServerMessage,
+  AlertClearedServerMessage,
+  LivePortfolioUpdate,
+  BatchUpdatePayload,
 } from '@foliolive/shared-types';
+
+export type PortfolioUpdatePayload = PortfolioUpdateServerMessage['payload'];
+export type AlertClearedPayload = AlertClearedServerMessage['payload'];
 
 export type ConnectionStatus = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'RECONNECTING';
 
@@ -31,11 +36,12 @@ export class RealtimeClient {
   private subscribedSymbols = new Set<string>();
 
   private tickListeners = new Set<RealtimeEventHandler<MarketTick>>();
-  private portfolioListeners = new Set<
-    RealtimeEventHandler<{ summary: PortfolioSummary; holdings: Holding[] }>
-  >();
+  private portfolioListeners = new Set<RealtimeEventHandler<PortfolioUpdatePayload>>();
+  private livePortfolioListeners = new Set<RealtimeEventHandler<LivePortfolioUpdate>>();
   private riskListeners = new Set<RealtimeEventHandler<PortfolioRiskSummary>>();
   private alertListeners = new Set<RealtimeEventHandler<AlertNotification>>();
+  private alertClearedListeners = new Set<RealtimeEventHandler<AlertClearedPayload>>();
+  private batchListeners = new Set<RealtimeEventHandler<BatchUpdatePayload>>();
   private statusListeners = new Set<RealtimeEventHandler<ConnectionStatus>>();
 
   private readonly url: string;
@@ -151,11 +157,14 @@ export class RealtimeClient {
     return () => this.tickListeners.delete(handler);
   }
 
-  public onPortfolioUpdate(
-    handler: RealtimeEventHandler<{ summary: PortfolioSummary; holdings: Holding[] }>
-  ): () => void {
+  public onPortfolioUpdate(handler: RealtimeEventHandler<PortfolioUpdatePayload>): () => void {
     this.portfolioListeners.add(handler);
     return () => this.portfolioListeners.delete(handler);
+  }
+
+  public onLivePortfolioUpdate(handler: RealtimeEventHandler<LivePortfolioUpdate>): () => void {
+    this.livePortfolioListeners.add(handler);
+    return () => this.livePortfolioListeners.delete(handler);
   }
 
   public onRiskUpdate(handler: RealtimeEventHandler<PortfolioRiskSummary>): () => void {
@@ -166,6 +175,16 @@ export class RealtimeClient {
   public onAlert(handler: RealtimeEventHandler<AlertNotification>): () => void {
     this.alertListeners.add(handler);
     return () => this.alertListeners.delete(handler);
+  }
+
+  public onAlertCleared(handler: RealtimeEventHandler<AlertClearedPayload>): () => void {
+    this.alertClearedListeners.add(handler);
+    return () => this.alertClearedListeners.delete(handler);
+  }
+
+  public onBatch(handler: RealtimeEventHandler<BatchUpdatePayload>): () => void {
+    this.batchListeners.add(handler);
+    return () => this.batchListeners.delete(handler);
   }
 
   public onStatusChange(handler: RealtimeEventHandler<ConnectionStatus>): () => void {
@@ -192,6 +211,11 @@ export class RealtimeClient {
           for (const listener of this.portfolioListeners) {
             listener(parsed.payload);
           }
+          if (parsed.payload.liveUpdate) {
+            for (const listener of this.livePortfolioListeners) {
+              listener(parsed.payload.liveUpdate);
+            }
+          }
           break;
         case 'RISK_UPDATE':
           for (const listener of this.riskListeners) {
@@ -201,6 +225,51 @@ export class RealtimeClient {
         case 'ALERT_FIRED':
           for (const listener of this.alertListeners) {
             listener(parsed.payload);
+          }
+          break;
+        case 'ALERT_CLEARED':
+          for (const listener of this.alertClearedListeners) {
+            listener(parsed.payload);
+          }
+          break;
+        case 'BATCH':
+          for (const listener of this.batchListeners) {
+            listener(parsed.payload);
+          }
+          if (parsed.payload.ticks) {
+            for (const tick of parsed.payload.ticks) {
+              for (const listener of this.tickListeners) {
+                listener(tick);
+              }
+            }
+          }
+          if (parsed.payload.portfolioUpdates) {
+            for (const update of parsed.payload.portfolioUpdates) {
+              for (const listener of this.livePortfolioListeners) {
+                listener(update);
+              }
+            }
+          }
+          if (parsed.payload.riskUpdates) {
+            for (const risk of parsed.payload.riskUpdates) {
+              for (const listener of this.riskListeners) {
+                listener(risk);
+              }
+            }
+          }
+          if (parsed.payload.alerts) {
+            for (const alert of parsed.payload.alerts) {
+              for (const listener of this.alertListeners) {
+                listener(alert);
+              }
+            }
+          }
+          if (parsed.payload.clearedAlerts) {
+            for (const cleared of parsed.payload.clearedAlerts) {
+              for (const listener of this.alertClearedListeners) {
+                listener(cleared);
+              }
+            }
           }
           break;
         case 'PONG':

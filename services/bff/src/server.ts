@@ -2,43 +2,76 @@ import http from 'node:http';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { WebSocketServer, WebSocket } from 'ws';
-import client from 'prom-client';
+import cookieParser from 'cookie-parser';
+import { config } from './config';
+import { httpLogger, logger } from './logger';
+import { metricsRegistry } from './metrics';
 import { MarketSimulator } from './simulator';
-import type { WebSocketClientMessage, WebSocketServerMessage, User } from '@foliolive/shared-types';
+import { RealtimeEngine } from './realtime-engine';
+import { WebSocketGateway } from './websocket';
+import { createAuthRouter } from './routes/auth.routes';
+import { createApiRouter } from './routes/api.routes';
 
-// Prometheus setup
-const collectDefaultMetrics = client.collectDefaultMetrics;
-collectDefaultMetrics({ prefix: 'foliolive_bff_' });
-
-const wsConnectionsGauge = new client.Gauge({
-  name: 'foliolive_bff_active_websocket_connections',
-  help: 'Number of active WebSocket connections',
-});
-
-const ticksBroadcastCounter = new client.Counter({
-  name: 'foliolive_bff_market_ticks_broadcast_total',
-  help: 'Total number of market ticks broadcast to clients',
-});
-
-export interface ServerInstance {
+export interface BffServerInstance {
+  app: express.Application;
   server: http.Server;
-  wss: WebSocketServer;
-  tickInterval: ReturnType<typeof setInterval>;
+  simulator: MarketSimulator;
+  realtimeEngine: RealtimeEngine;
+  wsGateway: WebSocketGateway;
+  start: (port?: number) => Promise<http.Server>;
+  stop: () => Promise<void>;
 }
 
-export function createApp(): express.Application {
+export function createBffServer(options?: {
+  seed?: number;
+  defaultIntervalMs?: number;
+}): BffServerInstance {
   const app = express();
+  const server = http.createServer(app);
 
-  app.use(helmet());
-  app.use(cors({ origin: '*' }));
+  // Security headers with Helmet
+  app.use(
+    helmet({
+      contentSecurityPolicy: config.isDev ? false : undefined,
+      crossOriginEmbedderPolicy: false,
+    })
+  );
+
+  // CORS allowlist configuration
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, or Postman)
+        if (!origin) return callback(null, true);
+        if (config.corsOrigins.includes('*') || config.corsOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        // In dev, allow localhost on any port
+        if (config.isDev && /^http:\/\/localhost:\d+$/.test(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error(`Origin ${origin} not allowed by CORS`));
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    })
+  );
+
+  // Cookie parser for httpOnly refresh tokens
+  app.use(cookieParser());
+
+  // JSON request body parser
   app.use(express.json());
 
-  // Metrics endpoint for Prometheus
+  // HTTP structured logging
+  app.use(httpLogger);
+
+  // Prometheus /metrics endpoint
   app.get('/metrics', async (_req: Request, res: Response) => {
     try {
-      res.set('Content-Type', client.register.contentType);
-      res.end(await client.register.metrics());
+      res.set('Content-Type', metricsRegistry.contentType);
+      res.end(await metricsRegistry.metrics());
     } catch (err) {
       res.status(500).end(err);
     }
@@ -54,119 +87,75 @@ export function createApp(): express.Application {
     });
   });
 
-  // Auth mock for Phase 0 / local dev
-  app.post('/api/v1/auth/login', (req: Request, res: Response) => {
-    const { username = 'pm_demo' } = req.body;
-    const user: User = {
-      id: 'usr_01',
-      username,
-      email: `${username}@foliolive.internal`,
-      fullName: 'Institutional Portfolio Manager',
-      role: 'PORTFOLIO_MANAGER',
-      createdAt: new Date().toISOString(),
-    };
+  // Instantiate Simulator and Realtime Engine
+  const simulator = new MarketSimulator(
+    options?.seed ?? config.simulator.defaultSeed,
+    options?.defaultIntervalMs ?? config.simulator.defaultTickIntervalMs
+  );
+  const realtimeEngine = new RealtimeEngine(simulator);
 
-    res.json({
-      success: true,
-      data: {
-        token: 'mock-jwt-token-for-dev',
-        expiresIn: 86400,
-        user,
+  // Instantiate WebSocket Gateway
+  const wsGateway = new WebSocketGateway(server, simulator, realtimeEngine);
+
+  // Mount Auth routes: /auth/login, /auth/refresh, /auth/logout, /auth/me, /auth/demo-users
+  app.use('/auth', createAuthRouter());
+
+  // Mount Aggregation & Simulator API routes: /api/portfolio-overview, /api/market-overview, etc.
+  app.use('/api', createApiRouter(simulator, realtimeEngine));
+
+  // 404 handler
+  app.use((_req: Request, res: Response) => {
+    res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Endpoint not found' },
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  // Global error handler
+  app.use((err: Error, _req: Request, res: Response, _next: express.NextFunction) => {
+    logger.error({ err: err.message, stack: err.stack }, 'Unhandled error in BFF');
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: config.isDev ? err.message : 'Internal Server Error',
       },
       timestamp: new Date().toISOString(),
     });
   });
 
-  // Portfolio summary mock for Phase 0
-  app.get('/api/v1/portfolio/summary', (_req: Request, res: Response) => {
-    res.json({
-      success: true,
-      data: {
-        id: 'port_global_alpha_01',
-        name: 'Global Multi-Asset Alpha Fund',
-        description: 'Flagship institutional long-biased alpha strategy',
-        currency: 'USD',
-        totalValue: 125430800.5,
-        cashBalance: 8420000.0,
-        totalUnrealizedPnL: 14210350.2,
-        totalRealizedPnL: 3820400.0,
-        dailyPnL: 482150.8,
-        dailyPnLPercent: 0.38,
-        holdingsCount: 10,
-        updatedAt: new Date().toISOString(),
-      },
-      timestamp: new Date().toISOString(),
+  const start = (port = config.port): Promise<http.Server> => {
+    return new Promise((resolve) => {
+      server.listen(port, config.host, () => {
+        logger.info(
+          { port, host: config.host },
+          `Foliolive BFF & WebSocket Server listening on http://${config.host}:${port}`
+        );
+        simulator.start();
+        resolve(server);
+      });
     });
-  });
+  };
 
-  return app;
-}
-
-export function startServer(port = 4000, seed = 42): ServerInstance {
-  const app = createApp();
-  const server = http.createServer(app);
-  const wss = new WebSocketServer({ server, path: '/ws' });
-  const simulator = new MarketSimulator(seed);
-
-  const activeClients = new Set<WebSocket>();
-
-  wss.on('connection', (ws: WebSocket) => {
-    activeClients.add(ws);
-    wsConnectionsGauge.inc();
-
-    const welcomeMsg: WebSocketServerMessage = {
-      type: 'CONNECTED',
-      payload: {
-        connectionId: Math.random().toString(36).substring(2, 10),
-        serverTime: new Date().toISOString(),
-      },
-    };
-    ws.send(JSON.stringify(welcomeMsg));
-
-    ws.on('message', (data: string) => {
-      try {
-        const clientMsg: WebSocketClientMessage = JSON.parse(data.toString());
-        if (clientMsg.type === 'PING') {
-          const pong: WebSocketServerMessage = {
-            type: 'PONG',
-            payload: { timestamp: Date.now() },
-          };
-          ws.send(JSON.stringify(pong));
-        }
-      } catch {
-        // Ignore
-      }
+  const stop = (): Promise<void> => {
+    return new Promise((resolve) => {
+      simulator.stop();
+      wsGateway.close();
+      server.close(() => {
+        logger.info('Foliolive BFF server stopped');
+        resolve();
+      });
     });
+  };
 
-    ws.on('close', () => {
-      activeClients.delete(ws);
-      wsConnectionsGauge.dec();
-    });
-  });
-
-  // Broadcast market tick periodically
-  const tickInterval = setInterval(() => {
-    if (activeClients.size === 0) return;
-
-    const tick = simulator.generateTick();
-    const tickMsg: WebSocketServerMessage = {
-      type: 'TICK',
-      payload: tick,
-    };
-    const serialized = JSON.stringify(tickMsg);
-
-    for (const client of activeClients) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(serialized);
-      }
-    }
-    ticksBroadcastCounter.inc();
-  }, 1000);
-
-  server.listen(port, () => {
-    // eslint-disable-next-line no-console
-    console.info(`[BFF] Realtime Gateway listening on port ${port} (HTTP & WS)`);
-  });
-
-  return { server, wss, tickInterval };
+  return {
+    app,
+    server,
+    simulator,
+    realtimeEngine,
+    wsGateway,
+    start,
+    stop,
+  };
 }

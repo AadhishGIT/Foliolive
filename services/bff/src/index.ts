@@ -1,6 +1,23 @@
-import { startServer } from './server';
+import { createBffServer } from './server';
+import { config } from './config';
+import { logger } from './logger';
 
-const port = Number(process.env.BFF_PORT || 4000);
-const seed = Number(process.env.SIMULATION_SEED || 42);
+const bff = createBffServer({
+  seed: config.simulator.defaultSeed,
+  defaultIntervalMs: config.simulator.defaultTickIntervalMs,
+});
 
-startServer(port, seed);
+bff.start(config.port).catch((err) => {
+  logger.fatal({ err: err.message }, 'Failed to start BFF server');
+  process.exit(1);
+});
+
+// Graceful shutdown
+const shutdown = async () => {
+  logger.info('Shutting down BFF server gracefully...');
+  await bff.stop();
+  process.exit(0);
+};
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
