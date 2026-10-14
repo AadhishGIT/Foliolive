@@ -9,6 +9,7 @@ target/
 .turbo/
 out/
 storybook-static/
+*.tsbuildinfo
 
 # Environment files (never commit real secrets)
 .env
@@ -46,5 +47,5 @@ Thumbs.db
 *.swo
 
 # Docker volume data
-data/
-postgres-data/
+/data/
+/postgres-data/
