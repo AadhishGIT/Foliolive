@@ -22,8 +22,8 @@ services:
 
   core-api:
     build:
-      context: .
-      dockerfile: services/core-api/Dockerfile
+      context: ./services/core-api
+      dockerfile: Dockerfile
     container_name: foliolive-core-api
     restart: unless-stopped
     ports:
@@ -88,7 +88,7 @@ services:
     container_name: foliolive-shell
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '3100:3000'
     environment:
       VITE_BFF_WS_URL: ws://localhost:4000/ws
       VITE_PORTFOLIO_MFE_URL: http://localhost:3001
@@ -117,7 +117,7 @@ services:
     container_name: foliolive-grafana
     restart: unless-stopped
     ports:
-      - '3100:3000'
+      - '3200:3000'
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
     volumes:
