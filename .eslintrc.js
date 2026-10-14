@@ -22,6 +22,7 @@ module.exports = {
     'target/',
     '.turbo/',
     'coverage/',
+    'storybook-static/',
     '*.config.js',
     '*.preset.js',
   ],
