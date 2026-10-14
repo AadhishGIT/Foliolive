@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+target/
+.turbo/
+coverage/
+pnpm-lock.yaml
+.mvn/
+*.sql
+*.log

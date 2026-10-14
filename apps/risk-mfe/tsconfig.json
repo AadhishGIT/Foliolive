@@ -1,0 +1,14 @@
+{
+  "extends": "@foliolive/config/tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../../packages/shared-types" },
+    { "path": "../../packages/ui" },
+    { "path": "../../packages/realtime-client" }
+  ]
+}

@@ -1,0 +1,129 @@
+name: foliolive
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: foliolive-postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-foliolive}
+      POSTGRES_USER: ${POSTGRES_USER:-foliolive_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-foliolive_dev_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-foliolive_user} -d ${POSTGRES_DB:-foliolive}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  core-api:
+    build:
+      context: .
+      dockerfile: services/core-api/Dockerfile
+    container_name: foliolive-core-api
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-foliolive}
+      POSTGRES_USER: ${POSTGRES_USER:-foliolive_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-foliolive_dev_password}
+      JWT_SECRET: ${JWT_SECRET:-foliolive-development-hmac-sha256-secret-must-be-at-least-32-bytes!}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  bff:
+    build:
+      context: .
+      dockerfile: services/bff/Dockerfile
+    container_name: foliolive-bff
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    environment:
+      BFF_PORT: 4000
+      CORE_API_URL: http://core-api:8080
+      SIMULATION_SEED: 42
+    depends_on:
+      - core-api
+
+  portfolio-mfe:
+    build:
+      context: .
+      dockerfile: apps/portfolio-mfe/Dockerfile
+    container_name: foliolive-portfolio-mfe
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+
+  risk-mfe:
+    build:
+      context: .
+      dockerfile: apps/risk-mfe/Dockerfile
+    container_name: foliolive-risk-mfe
+    restart: unless-stopped
+    ports:
+      - '3002:3002'
+
+  alerts-mfe:
+    build:
+      context: .
+      dockerfile: apps/alerts-mfe/Dockerfile
+    container_name: foliolive-alerts-mfe
+    restart: unless-stopped
+    ports:
+      - '3003:3003'
+
+  shell:
+    build:
+      context: .
+      dockerfile: apps/shell/Dockerfile
+    container_name: foliolive-shell
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      VITE_BFF_WS_URL: ws://localhost:4000/ws
+      VITE_PORTFOLIO_MFE_URL: http://localhost:3001
+      VITE_RISK_MFE_URL: http://localhost:3002
+      VITE_ALERTS_MFE_URL: http://localhost:3003
+    depends_on:
+      - portfolio-mfe
+      - risk-mfe
+      - alerts-mfe
+      - bff
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: foliolive-prometheus
+    restart: unless-stopped
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./infra/docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - core-api
+      - bff
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: foliolive-grafana
+    restart: unless-stopped
+    ports:
+      - '3100:3000'
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - ./infra/docker/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres-data:

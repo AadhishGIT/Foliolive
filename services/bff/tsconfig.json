@@ -1,0 +1,13 @@
+{
+  "extends": "@foliolive/config/tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "types": ["node"]
+  },
+  "include": ["src/**/*"],
+  "references": [{ "path": "../../packages/shared-types" }]
+}

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "files": [],
+  "references": [
+    { "path": "./packages/shared-types" },
+    { "path": "./packages/realtime-client" },
+    { "path": "./packages/ui" },
+    { "path": "./services/bff" },
+    { "path": "./apps/portfolio-mfe" },
+    { "path": "./apps/risk-mfe" },
+    { "path": "./apps/alerts-mfe" },
+    { "path": "./apps/shell" }
+  ]
+}
