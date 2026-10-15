@@ -40,16 +40,18 @@ export function VaRMetricsCards({
         <Card className="flex flex-col justify-between">
           <CardHeader className="pb-1">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xs uppercase font-mono text-slate-400">
+              <CardTitle className="text-xs uppercase font-mono text-slate-600 dark:text-slate-400">
                 Parametric VaR (95%, 1-Day)
               </CardTitle>
               <Badge variant={pVaRPercent > pVaRThreshold ? 'destructive' : 'success'}>
                 {pVaRPercent > pVaRThreshold ? 'Limit Breached' : 'Within Limit'}
               </Badge>
             </div>
-            <div className="text-xl font-bold font-mono text-white mt-1">
+            <div className="text-xl font-bold font-mono text-slate-900 dark:text-white mt-1">
               ${(parametricVaR95 / 1_000_000).toFixed(2)}M{' '}
-              <span className="text-xs text-slate-400 font-sans">({pVaRPercent.toFixed(2)}%)</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400 font-sans">
+                ({pVaRPercent.toFixed(2)}%)
+              </span>
             </div>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center pt-0">
@@ -62,7 +64,7 @@ export function VaRMetricsCards({
               unit="%"
               size={160}
             />
-            <div className="w-full flex justify-between text-[10px] font-mono text-slate-400 mt-1 border-t border-slate-800/60 pt-1.5">
+            <div className="w-full flex justify-between text-[10px] font-mono text-slate-600 dark:text-slate-400 mt-1 border-t border-slate-200 dark:border-slate-800/60 pt-1.5">
               <span>
                 Policy Limit: <strong>{pVaRThreshold.toFixed(1)}%</strong>
               </span>
@@ -77,16 +79,18 @@ export function VaRMetricsCards({
         <Card className="flex flex-col justify-between">
           <CardHeader className="pb-1">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xs uppercase font-mono text-slate-400">
+              <CardTitle className="text-xs uppercase font-mono text-slate-600 dark:text-slate-400">
                 Historical Simulation (99%, 1-Day)
               </CardTitle>
               <Badge variant={hVaRPercent > hVaRThreshold ? 'destructive' : 'success'}>
                 {hVaRPercent > hVaRThreshold ? 'Limit Breached' : 'Within Limit'}
               </Badge>
             </div>
-            <div className="text-xl font-bold font-mono text-white mt-1">
+            <div className="text-xl font-bold font-mono text-slate-900 dark:text-white mt-1">
               ${(historicalVaR99 / 1_000_000).toFixed(2)}M{' '}
-              <span className="text-xs text-slate-400 font-sans">({hVaRPercent.toFixed(2)}%)</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400 font-sans">
+                ({hVaRPercent.toFixed(2)}%)
+              </span>
             </div>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center pt-0">
@@ -99,7 +103,7 @@ export function VaRMetricsCards({
               unit="%"
               size={160}
             />
-            <div className="w-full flex justify-between text-[10px] font-mono text-slate-400 mt-1 border-t border-slate-800/60 pt-1.5">
+            <div className="w-full flex justify-between text-[10px] font-mono text-slate-600 dark:text-slate-400 mt-1 border-t border-slate-200 dark:border-slate-800/60 pt-1.5">
               <span>
                 Policy Limit: <strong>{hVaRThreshold.toFixed(1)}%</strong>
               </span>
@@ -114,16 +118,18 @@ export function VaRMetricsCards({
         <Card className="flex flex-col justify-between">
           <CardHeader className="pb-1">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xs uppercase font-mono text-slate-400">
+              <CardTitle className="text-xs uppercase font-mono text-slate-600 dark:text-slate-400">
                 Expected Shortfall / CVaR (95%)
               </CardTitle>
               <Badge variant={esPercent > esThreshold ? 'warning' : 'success'}>
                 {esPercent > esThreshold ? 'Tail Warning' : 'Tail Safe'}
               </Badge>
             </div>
-            <div className="text-xl font-bold font-mono text-white mt-1">
+            <div className="text-xl font-bold font-mono text-slate-900 dark:text-white mt-1">
               ${(expectedShortfall95 / 1_000_000).toFixed(2)}M{' '}
-              <span className="text-xs text-slate-400 font-sans">({esPercent.toFixed(2)}%)</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400 font-sans">
+                ({esPercent.toFixed(2)}%)
+              </span>
             </div>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center pt-0">
@@ -136,7 +142,7 @@ export function VaRMetricsCards({
               unit="%"
               size={160}
             />
-            <div className="w-full flex justify-between text-[10px] font-mono text-slate-400 mt-1 border-t border-slate-800/60 pt-1.5">
+            <div className="w-full flex justify-between text-[10px] font-mono text-slate-600 dark:text-slate-400 mt-1 border-t border-slate-200 dark:border-slate-800/60 pt-1.5">
               <span>
                 Tail Loss Limit: <strong>{esThreshold.toFixed(1)}%</strong>
               </span>

@@ -9,7 +9,7 @@ describe('DeltaValue Financial Component', () => {
 
     const delta = screen.getByLabelText(/gain of \+\$1,250\.75 \(1\.35 percent\)/i);
     expect(delta).toBeInTheDocument();
-    expect(delta).toHaveClass('text-emerald-600');
+    expect(delta).toHaveClass('text-emerald-700');
     expect(delta).toHaveTextContent('+$1,250.75');
     expect(delta).toHaveTextContent('(+1.35%)');
   });
@@ -19,7 +19,7 @@ describe('DeltaValue Financial Component', () => {
 
     const delta = screen.getByLabelText(/loss of -\$450\.20 \(0\.45 percent\)/i);
     expect(delta).toBeInTheDocument();
-    expect(delta).toHaveClass('text-red-600');
+    expect(delta).toHaveClass('text-red-700');
     expect(delta).toHaveTextContent('-$450.20');
     expect(delta).toHaveTextContent('(-0.45%)');
   });
@@ -29,7 +29,7 @@ describe('DeltaValue Financial Component', () => {
 
     const delta = screen.getByLabelText(/unchanged of \$0\.00 \(0\.00 percent\)/i);
     expect(delta).toBeInTheDocument();
-    expect(delta).toHaveClass('text-muted-foreground');
+    expect(delta).toHaveClass('text-slate-600');
   });
 
   it('never relies on color alone (includes sign, symbol, and screen reader text)', () => {

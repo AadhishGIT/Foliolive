@@ -148,10 +148,14 @@ export function PnLTimeSeriesChart({ initialAUM = 125_430_800 }: PnLTimeSeriesCh
               <TrendingUp className="w-4 h-4 text-emerald-400" />
               Cumulative P&L Over Time (D3 Brush & Zoom)
             </CardTitle>
-            <div className="text-xs text-slate-400 mt-0.5">
+            <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
               Current Period:{' '}
               <strong
-                className={isPositive ? 'text-emerald-400 font-mono' : 'text-rose-400 font-mono'}
+                className={
+                  isPositive
+                    ? 'text-emerald-700 dark:text-emerald-400 font-mono'
+                    : 'text-rose-700 dark:text-rose-400 font-mono'
+                }
               >
                 {isPositive ? '+' : ''}${Math.round(currentPnL).toLocaleString()}
               </strong>
@@ -172,7 +176,7 @@ export function PnLTimeSeriesChart({ initialAUM = 125_430_800 }: PnLTimeSeriesCh
                 variant="outline"
                 size="sm"
                 onClick={() => applyPreset(preset.days)}
-                className="text-[11px] px-2 py-0.5 h-6 border-slate-700 bg-slate-900"
+                className="text-[11px] px-2 py-0.5 h-6 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
               >
                 {preset.label}
               </Button>

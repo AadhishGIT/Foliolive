@@ -65,7 +65,7 @@ export function CorrelationHeatmap() {
             <Activity className="w-4 h-4 text-emerald-400" />
             Cross-Sector Correlation Heatmap (D3 Matrix)
           </CardTitle>
-          <span className="text-[11px] text-slate-400 font-mono">
+          <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono">
             {focusedCell
               ? `${focusedCell.row} x ${focusedCell.col}: ${focusedCell.val > 0 ? '+' : ''}${focusedCell.val.toFixed(2)}`
               : 'Hover / Focus cell'}
@@ -79,7 +79,7 @@ export function CorrelationHeatmap() {
             width={dimensions.width}
             height={dimensions.height}
             viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
-            role="grid"
+            role="graphics-document"
             aria-label="Cross-sector correlation matrix"
             className="overflow-visible select-none"
           >
@@ -128,7 +128,7 @@ export function CorrelationHeatmap() {
                           fill={getCorrelationColor(val)}
                           rx={3}
                           tabIndex={0}
-                          role="gridcell"
+                          role="graphics-symbol"
                           aria-label={`Correlation between ${rowName} and ${colName} is ${val.toFixed(2)}`}
                           className={`cursor-pointer transition-all duration-150 focus:outline-none ${
                             isFocused ? 'ring-2 ring-white' : ''
@@ -162,7 +162,7 @@ export function CorrelationHeatmap() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-center gap-4 text-[10px] font-mono text-slate-400 mt-2">
+        <div className="flex items-center justify-center gap-4 text-[10px] font-mono text-slate-600 dark:text-slate-400 mt-2">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
             <span>&lt;0 (Hedge)</span>

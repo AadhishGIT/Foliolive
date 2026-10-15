@@ -148,20 +148,21 @@ export function AlertsApp({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
-            <BellRing className="w-6 h-6 text-rose-400" />
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+            <BellRing className="w-6 h-6 text-rose-500 dark:text-rose-400" />
             Mandate Limits & Real-Time Alert Surveillance
           </h1>
-          <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 flex items-center gap-2">
             <span>Portfolio ID:</span>
-            <span className="font-mono text-slate-200 font-semibold bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+            <span className="font-mono text-slate-800 dark:text-slate-200 font-semibold bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
               {currentPortfolioId}
             </span>
             <span>•</span>
             <span>
-              Access Role: <strong className="text-white font-mono">{userRole}</strong>
+              Access Role:{' '}
+              <strong className="text-slate-900 dark:text-white font-mono">{userRole}</strong>
             </span>
           </p>
         </div>
@@ -182,35 +183,45 @@ export function AlertsApp({
 
       {/* Surveillance Summary Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-lg bg-slate-900 border border-slate-800 flex items-center gap-3">
-          <div className="p-2.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800/60">
+        <div className="p-4 rounded-lg bg-card text-card-foreground border border-border shadow-sm flex items-center gap-3">
+          <div className="p-2.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-slate-400 font-medium font-mono">ACTIVE MANDATES</div>
-            <div className="text-xl font-bold font-mono text-white">4 Rules Enforced</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-medium font-mono">
+              ACTIVE MANDATES
+            </div>
+            <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">
+              4 Rules Enforced
+            </div>
           </div>
         </div>
 
-        <div className="p-4 rounded-lg bg-slate-900 border border-slate-800 flex items-center gap-3">
-          <div className="p-2.5 rounded-full bg-amber-950/60 text-amber-400 border border-amber-800/60">
+        <div className="p-4 rounded-lg bg-card text-card-foreground border border-border shadow-sm flex items-center gap-3">
+          <div className="p-2.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60">
             <AlertTriangle className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-slate-400 font-medium font-mono">
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-medium font-mono">
               UNACKNOWLEDGED ALERTS
             </div>
-            <div className="text-xl font-bold font-mono text-amber-400">{unacknowledgedCount}</div>
+            <div className="text-xl font-bold font-mono text-amber-700 dark:text-amber-400">
+              {unacknowledgedCount}
+            </div>
           </div>
         </div>
 
-        <div className="p-4 rounded-lg bg-slate-900 border border-slate-800 flex items-center gap-3">
-          <div className="p-2.5 rounded-full bg-blue-950/60 text-blue-400 border border-blue-800/60">
+        <div className="p-4 rounded-lg bg-card text-card-foreground border border-border shadow-sm flex items-center gap-3">
+          <div className="p-2.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60">
             <SlidersHorizontal className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-slate-400 font-medium font-mono">SURVEILLANCE ENGINE</div>
-            <div className="text-xl font-bold font-mono text-emerald-400">Real-Time WebSocket</div>
+            <div className="text-xs text-slate-600 dark:text-slate-400 font-medium font-mono">
+              SURVEILLANCE ENGINE
+            </div>
+            <div className="text-xl font-bold font-mono text-emerald-700 dark:text-emerald-400">
+              Real-Time WebSocket
+            </div>
           </div>
         </div>
       </div>

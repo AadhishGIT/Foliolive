@@ -71,11 +71,12 @@ export function ConcentrationChart() {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <PieChart className="w-4 h-4 text-purple-400" />
+            <PieChart className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             Top 10 Concentration & Single-Asset Cap
           </CardTitle>
-          <span className="text-xs text-slate-400 font-mono">
-            Top 5: <strong className="text-white">{top5Total.toFixed(1)}%</strong>
+          <span className="text-xs text-slate-600 dark:text-slate-400 font-mono">
+            Top 5:{' '}
+            <strong className="text-slate-900 dark:text-white">{top5Total.toFixed(1)}%</strong>
           </span>
         </div>
       </CardHeader>

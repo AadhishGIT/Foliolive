@@ -72,20 +72,20 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-rose-950/60 border border-rose-800/60 text-rose-400">
+            <div className="p-2 rounded-lg bg-rose-100 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-400">
               <BellRing className="w-4 h-4 animate-pulse" />
             </div>
             <div>
-              <CardTitle className="text-sm font-semibold text-white">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">
                 Live Breach Stream & Alert Feed
               </CardTitle>
-              <div className="text-xs text-slate-400 font-mono mt-0.5">
+              <div className="text-xs text-slate-600 dark:text-slate-400 font-mono mt-0.5">
                 {activeCount > 0 ? (
-                  <span className="text-amber-400 font-bold">
+                  <span className="text-amber-900 dark:text-amber-400 font-bold">
                     {activeCount} Unacknowledged Active Breaches
                   </span>
                 ) : (
-                  <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3" /> All Risk Mandates Normal
                   </span>
                 )}
@@ -99,7 +99,7 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
               value={severityFilter}
               onChange={(e) => setSeverityFilter(e.target.value as 'ALL' | AlertSeverity)}
               aria-label="Filter alerts by severity"
-              className="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded px-2.5 py-1 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-200 rounded px-2.5 py-1 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="ALL">All Severities</option>
               <option value="CRITICAL">Critical Only</option>
@@ -112,7 +112,7 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'ALL' | 'ACTIVE' | 'ACKNOWLEDGED')}
               aria-label="Filter alerts by status"
-              className="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded px-2.5 py-1 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-200 rounded px-2.5 py-1 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="ALL">All Statuses</option>
               <option value="ACTIVE">Active Only</option>
@@ -125,9 +125,9 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
                 variant="outline"
                 size="sm"
                 onClick={onAcknowledgeAll}
-                className="text-xs flex items-center gap-1.5 border-slate-700"
+                className="text-xs flex items-center gap-1.5 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200"
               >
-                <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <CheckCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 Acknowledge All
               </Button>
             )}
@@ -137,7 +137,7 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
 
       <CardContent>
         {filteredAlerts.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 text-xs font-mono border border-dashed border-slate-800 rounded-lg">
+          <div className="p-8 text-center text-slate-600 dark:text-slate-400 text-xs font-mono border border-dashed border-slate-300 dark:border-slate-800 rounded-lg">
             No alerts match the selected criteria.
           </div>
         ) : (
@@ -147,12 +147,12 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
                 key={alert.id}
                 className={`p-3.5 rounded-lg border transition-all ${
                   alert.acknowledged
-                    ? 'border-slate-800/50 bg-slate-950/30 opacity-75'
+                    ? 'border-slate-200 dark:border-slate-800/60 bg-slate-100/60 dark:bg-slate-900/30'
                     : alert.severity === 'CRITICAL'
-                      ? 'border-rose-800/80 bg-rose-950/20'
+                      ? 'border-rose-300 dark:border-rose-800/80 bg-rose-50/70 dark:bg-rose-950/20'
                       : alert.severity === 'WARNING'
-                        ? 'border-amber-800/80 bg-amber-950/20'
-                        : 'border-slate-800 bg-slate-900/40'
+                        ? 'border-amber-300 dark:border-amber-800/80 bg-amber-50/70 dark:bg-amber-950/20'
+                        : 'border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -168,19 +168,21 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
                     </div>
 
                     <div>
-                      <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                         <span>{alert.title}</span>
-                        <span className="text-[10px] font-mono text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
+                        <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">
                           {alert.portfolioId}
                         </span>
                       </h4>
-                      <p className="text-xs text-slate-300 mt-0.5 font-sans">{alert.message}</p>
-                      <div className="flex items-center gap-3 text-[10px] text-slate-400 font-mono mt-1.5">
+                      <p className="text-xs text-slate-700 dark:text-slate-300 mt-0.5 font-sans">
+                        {alert.message}
+                      </p>
+                      <div className="flex items-center gap-3 text-[10px] text-slate-600 dark:text-slate-400 font-mono mt-1.5">
                         <span>Triggered: {alert.triggeredAt}</span>
                         <span>•</span>
                         <span>
                           Level:{' '}
-                          <strong className="text-white">
+                          <strong className="text-slate-900 dark:text-white">
                             {alert.currentValue}
                             {alert.unit}
                           </strong>{' '}
@@ -193,8 +195,8 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
 
                   <div className="flex items-center gap-2 self-end sm:self-center">
                     {alert.acknowledged ? (
-                      <span className="text-xs text-slate-400 flex items-center gap-1.5 font-mono">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1.5 font-mono">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                         <span>Ack: {alert.acknowledgedBy || 'Lead PM'}</span>
                       </span>
                     ) : (
@@ -202,7 +204,7 @@ export function LiveAlertFeed({ alerts, onAcknowledge, onAcknowledgeAll }: LiveA
                         size="sm"
                         variant="outline"
                         onClick={() => onAcknowledge(alert.id)}
-                        className="text-xs border-slate-700 bg-slate-900 hover:bg-slate-800"
+                        className="text-xs border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-900 dark:text-white"
                         aria-label={`Acknowledge alert: ${alert.title}`}
                       >
                         Acknowledge

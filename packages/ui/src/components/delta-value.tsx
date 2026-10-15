@@ -57,10 +57,10 @@ export const DeltaValue = React.forwardRef<HTMLSpanElement, DeltaValueProps>(
     const sign = isPositive ? '+' : isNegative ? '-' : '';
 
     const colorClasses = isPositive
-      ? 'text-emerald-600 dark:text-emerald-400'
+      ? 'text-emerald-700 dark:text-emerald-400'
       : isNegative
-        ? 'text-red-600 dark:text-red-400'
-        : 'text-muted-foreground';
+        ? 'text-red-700 dark:text-red-400'
+        : 'text-slate-600 dark:text-slate-400';
 
     // Screen reader accessible explanation
     const actionWord = isPositive ? 'gain' : isNegative ? 'loss' : 'unchanged';

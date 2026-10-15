@@ -75,7 +75,7 @@ test.describe('Risk Micro-Frontend (VaR, Heatmap & Exposures)', () => {
     await expect(
       page.getByRole('heading', { name: /Cross-Sector Correlation Heatmap/i })
     ).toBeVisible();
-    const heatmapGrid = page.getByRole('grid', { name: /Cross-sector correlation matrix/i });
+    const heatmapGrid = page.locator('svg[aria-label="Cross-sector correlation matrix"]');
     await expect(heatmapGrid).toBeVisible();
 
     const srTable = page.getByRole('table', { name: /Sector Cross-Correlation Matrix/i });

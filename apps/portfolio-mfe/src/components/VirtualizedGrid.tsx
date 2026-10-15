@@ -268,26 +268,32 @@ export function VirtualizedGrid({
       {/* Grid Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3 top-2.5" />
           <input
             type="text"
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
             placeholder="Filter by symbol, company, or sector..."
             aria-label="Filter holdings grid"
-            className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-md text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
+            className="w-full pl-9 pr-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md text-xs text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
           />
         </div>
 
         <div className="flex items-center gap-2">
           {/* Virtual Performance Telemetry */}
-          <div className="text-[11px] font-mono text-slate-400 hidden lg:flex items-center gap-2 bg-slate-900/80 px-2.5 py-1 rounded border border-slate-800">
+          <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400 hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-slate-900/80 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-800">
             <span>
-              Rows: <strong className="text-white">{sortedHoldings.length.toLocaleString()}</strong>
+              Rows:{' '}
+              <strong className="text-slate-900 dark:text-white">
+                {sortedHoldings.length.toLocaleString()}
+              </strong>
             </span>
             <span>•</span>
             <span>
-              Rendered DOM: <strong className="text-emerald-400">{virtualItems.length}</strong>
+              Rendered DOM:{' '}
+              <strong className="text-emerald-700 dark:text-emerald-400">
+                {virtualItems.length}
+              </strong>
             </span>
             {isStressMode && (
               <Badge variant="warning" className="text-[9px] px-1 py-0">
@@ -303,7 +309,7 @@ export function VirtualizedGrid({
               size="sm"
               onClick={() => setShowColPicker((prev) => !prev)}
               aria-label="Toggle visible columns"
-              className="text-xs flex items-center gap-1.5 border-slate-700 bg-slate-900"
+              className="text-xs flex items-center gap-1.5 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
               Columns ({activeColumns.length})
@@ -311,11 +317,11 @@ export function VirtualizedGrid({
 
             {showColPicker && (
               <div
-                className="absolute right-0 mt-1 w-48 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-2 z-50 text-xs space-y-1"
+                className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-xl p-2 z-50 text-xs space-y-1 text-slate-900 dark:text-slate-200"
                 role="dialog"
                 aria-label="Column Selection"
               >
-                <div className="text-[10px] uppercase font-mono font-bold text-slate-400 px-2 py-1 border-b border-slate-800">
+                <div className="text-[10px] uppercase font-mono font-bold text-slate-600 dark:text-slate-400 px-2 py-1 border-b border-slate-200 dark:border-slate-800">
                   Visible Columns
                 </div>
                 {ALL_COLUMNS.map((col) => {
@@ -347,16 +353,16 @@ export function VirtualizedGrid({
         aria-label="Institutional Holdings Matrix"
         aria-rowcount={sortedHoldings.length}
         aria-colcount={activeColumns.length}
-        className="h-[520px] overflow-auto rounded-lg border border-slate-800 bg-slate-950/70 focus:outline-none focus:ring-2 focus:ring-blue-500/50 relative shadow-inner"
+        className="h-[520px] overflow-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/70 focus:outline-none focus:ring-2 focus:ring-blue-500/50 relative shadow-inner"
       >
         {/* Sticky Header Row */}
         <div
           role="rowgroup"
-          className="sticky top-0 z-20 bg-slate-900/95 backdrop-blur border-b border-slate-800 shadow-sm"
+          className="sticky top-0 z-20 bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-sm"
         >
           <div
             role="row"
-            className="flex items-center text-xs font-mono font-semibold uppercase text-slate-400"
+            className="flex items-center text-xs font-mono font-semibold uppercase text-slate-700 dark:text-slate-400"
           >
             {activeColumns.map((col, cIdx) => (
               <div
@@ -377,17 +383,17 @@ export function VirtualizedGrid({
                   textAlign: col.align || 'left',
                 }}
                 onClick={() => handleSort(col.sortField)}
-                className={`p-3 cursor-pointer select-none hover:text-white transition-colors flex items-center gap-1.5 ${
+                className={`p-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1.5 ${
                   col.align === 'right' ? 'justify-end' : 'justify-start'
-                } ${selectedColIndex === cIdx ? 'bg-slate-800/40 text-blue-400' : ''}`}
+                } ${selectedColIndex === cIdx ? 'bg-slate-200/60 dark:bg-slate-800/40 text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
               >
                 <span>{col.label}</span>
                 {col.sortField && (
-                  <span className="text-slate-400">
+                  <span className="text-slate-600 dark:text-slate-400">
                     {sortField === col.sortField && sortDirection === 'asc' ? (
-                      <ArrowUp className="w-3 h-3 text-blue-400" />
+                      <ArrowUp className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                     ) : sortField === col.sortField && sortDirection === 'desc' ? (
-                      <ArrowDown className="w-3 h-3 text-blue-400" />
+                      <ArrowDown className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                     ) : (
                       <ArrowUpDown className="w-3 h-3 opacity-30 hover:opacity-100" />
                     )}
@@ -437,12 +443,12 @@ export function VirtualizedGrid({
                     height: `${virtualRow.size}px`,
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
-                  className={`flex items-center text-xs font-mono border-b border-slate-900 transition-colors ${
+                  className={`flex items-center text-xs font-mono border-b border-slate-200 dark:border-slate-800 transition-colors ${
                     isSelected
-                      ? 'bg-blue-950/40 border-blue-800/50'
+                      ? 'bg-blue-100/60 dark:bg-blue-950/40 border-blue-300 dark:border-blue-800/50'
                       : virtualRow.index % 2 === 0
-                        ? 'bg-slate-950/30 hover:bg-slate-900/60'
-                        : 'bg-slate-900/20 hover:bg-slate-900/60'
+                        ? 'bg-white dark:bg-slate-950/30 hover:bg-slate-100/70 dark:hover:bg-slate-900/60'
+                        : 'bg-slate-50/70 dark:bg-slate-900/20 hover:bg-slate-100/70 dark:hover:bg-slate-900/60'
                   }`}
                 >
                   {activeColumns.map((col, cIdx) => {
@@ -488,18 +494,20 @@ const CellContent = React.memo(function CellContent({
   switch (columnId) {
     case 'symbol':
       return (
-        <span className="font-bold text-white flex items-center gap-1.5">
-          <DollarSign className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+        <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+          <DollarSign className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
           {row.symbol}
         </span>
       );
 
     case 'name':
-      return <span className="font-sans text-slate-300 truncate">{row.name}</span>;
+      return (
+        <span className="font-sans text-slate-700 dark:text-slate-300 truncate">{row.name}</span>
+      );
 
     case 'sector':
       return (
-        <span className="text-[11px] text-slate-400 font-sans truncate">
+        <span className="text-[11px] text-slate-600 dark:text-slate-400 font-sans truncate">
           {row.sector.replace('_', ' ')}
         </span>
       );
@@ -512,10 +520,14 @@ const CellContent = React.memo(function CellContent({
       );
 
     case 'quantity':
-      return <span className="text-slate-300">{row.quantity.toLocaleString()}</span>;
+      return (
+        <span className="text-slate-700 dark:text-slate-300">{row.quantity.toLocaleString()}</span>
+      );
 
     case 'entryPrice':
-      return <span className="text-slate-400">${row.entryPrice.toFixed(2)}</span>;
+      return (
+        <span className="text-slate-600 dark:text-slate-400">${row.entryPrice.toFixed(2)}</span>
+      );
 
     case 'markPrice':
       return (
@@ -523,9 +535,9 @@ const CellContent = React.memo(function CellContent({
           className={`font-bold transition-colors duration-700 ${
             isUpdated
               ? row.dailyChange >= 0
-                ? 'bg-emerald-500/20 text-emerald-400 px-1 rounded'
-                : 'bg-rose-500/20 text-rose-400 px-1 rounded'
-              : 'text-white'
+                ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-1 rounded'
+                : 'bg-rose-500/20 text-rose-700 dark:text-rose-400 px-1 rounded'
+              : 'text-slate-900 dark:text-white'
           }`}
         >
           ${row.markPrice.toFixed(2)}
@@ -534,7 +546,7 @@ const CellContent = React.memo(function CellContent({
 
     case 'marketValue':
       return (
-        <span className="text-slate-200 font-semibold">
+        <span className="text-slate-900 dark:text-slate-200 font-semibold">
           ${Math.round(row.marketValue).toLocaleString()}
         </span>
       );
@@ -552,7 +564,9 @@ const CellContent = React.memo(function CellContent({
       return <DeltaValue value={row.dailyChangePercent} formatAs="percent" />;
 
     case 'weightPercent':
-      return <span className="text-slate-400">{row.weightPercent.toFixed(2)}%</span>;
+      return (
+        <span className="text-slate-600 dark:text-slate-400">{row.weightPercent.toFixed(2)}%</span>
+      );
 
     default:
       return null;

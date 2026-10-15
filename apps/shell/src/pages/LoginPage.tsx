@@ -146,19 +146,21 @@ export function LoginPage() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/20 text-white mb-2">
             <Activity className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Foliolive Analytics</h1>
-          <p className="text-xs text-slate-400">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Foliolive Analytics
+          </h1>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
             Institutional Portfolio & Real-Time Risk Platform
           </p>
         </div>
 
         {/* Login Card */}
-        <Card className="border-slate-800 bg-slate-900/90 shadow-2xl backdrop-blur">
+        <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-white">
+            <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
               Institutional Sign In
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">
+            <CardDescription className="text-xs text-slate-600 dark:text-slate-400">
               Sign in with your portfolio management or risk analyst credentials.
             </CardDescription>
           </CardHeader>
@@ -167,7 +169,7 @@ export function LoginPage() {
             {errorMessage && (
               <div className="mb-4">
                 <Banner variant="error" title="Authentication Error">
-                  <div className="flex items-center gap-1.5 text-xs text-rose-300">
+                  <div className="flex items-center gap-1.5 text-xs text-rose-700 dark:text-rose-300">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     <span>{errorMessage}</span>
                   </div>
@@ -179,7 +181,7 @@ export function LoginPage() {
               <div className="space-y-1">
                 <label
                   htmlFor="username-input"
-                  className="block text-xs font-medium text-slate-300"
+                  className="block text-xs font-medium text-slate-700 dark:text-slate-300"
                 >
                   Username
                 </label>
@@ -191,7 +193,7 @@ export function LoginPage() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="e.g. pm_demo"
-                    className="pl-9 bg-slate-950/80 border-slate-700 text-sm font-mono"
+                    className="pl-9 bg-slate-50 dark:bg-slate-950/80 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-mono"
                     required
                   />
                 </div>
@@ -200,7 +202,7 @@ export function LoginPage() {
               <div className="space-y-1">
                 <label
                   htmlFor="password-input"
-                  className="block text-xs font-medium text-slate-300"
+                  className="block text-xs font-medium text-slate-700 dark:text-slate-300"
                 >
                   Password
                 </label>
@@ -212,7 +214,7 @@ export function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter password"
-                    className="pl-9 bg-slate-950/80 border-slate-700 text-sm font-mono"
+                    className="pl-9 bg-slate-50 dark:bg-slate-950/80 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-mono"
                     required
                   />
                 </div>
@@ -229,8 +231,8 @@ export function LoginPage() {
             </form>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-3 pt-2 border-t border-slate-800/80">
-            <div className="text-[11px] text-slate-400 text-center uppercase tracking-wider font-semibold">
+          <CardFooter className="flex flex-col gap-3 pt-2 border-t border-slate-200 dark:border-slate-800/80">
+            <div className="text-[11px] text-slate-700 dark:text-slate-400 text-center uppercase tracking-wider font-semibold">
               Instant One-Click Demo Access
             </div>
             <div className="grid grid-cols-2 gap-2 w-full">
@@ -238,11 +240,11 @@ export function LoginPage() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="flex items-center justify-center gap-1.5 text-xs border-slate-700 hover:bg-slate-800"
+                className="flex items-center justify-center gap-1.5 text-xs border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-white"
                 onClick={() => handleQuickDemo('pm_demo')}
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="font-semibold text-white">PM Demo</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span className="font-semibold">PM Demo</span>
                 <Badge variant="success" className="text-[9px] px-1 py-0 ml-1">
                   Write
                 </Badge>
@@ -252,11 +254,11 @@ export function LoginPage() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="flex items-center justify-center gap-1.5 text-xs border-slate-700 hover:bg-slate-800"
+                className="flex items-center justify-center gap-1.5 text-xs border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-white"
                 onClick={() => handleQuickDemo('viewer_demo')}
               >
-                <UserCheck className="w-3.5 h-3.5 text-blue-400" />
-                <span className="font-semibold text-white">Viewer Demo</span>
+                <UserCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <span className="font-semibold">Viewer Demo</span>
                 <Badge variant="outline" className="text-[9px] px-1 py-0 ml-1">
                   Read
                 </Badge>
@@ -266,7 +268,7 @@ export function LoginPage() {
         </Card>
 
         {/* Security notice */}
-        <p className="text-[11px] text-slate-400 text-center font-mono">
+        <p className="text-[11px] text-slate-600 dark:text-slate-400 text-center font-mono">
           Strict WCAG 2.2 AA • JWT Resource Guarded • Simulated Institutional Environment
         </p>
       </div>

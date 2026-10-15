@@ -12,10 +12,10 @@ export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(
   ({ className, children, onRemove, removeAriaLabel, variant = 'default', ...props }, ref) => {
     const variantStyles = {
       default: 'bg-secondary text-secondary-foreground border-border',
-      primary: 'bg-primary/10 text-primary border-primary/20',
-      success: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
-      warning: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30',
-      danger: 'bg-destructive/10 text-destructive border-destructive/30',
+      primary: 'bg-blue-500/10 text-blue-800 dark:text-blue-400 border-blue-500/20',
+      success: 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/30',
+      warning: 'bg-amber-500/10 text-amber-900 dark:text-amber-400 border-amber-500/30',
+      danger: 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30',
     };
 
     const labelText = typeof children === 'string' ? children : 'tag';

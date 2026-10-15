@@ -70,20 +70,23 @@ export function AlertAuditHistory() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-blue-400" />
-            <CardTitle className="text-sm font-semibold text-white">
+            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">
               Historical Breach Audit Trail
             </CardTitle>
           </div>
 
           <div className="flex items-center gap-2">
-            <label htmlFor="audit-filter-select" className="text-xs text-slate-400 font-mono">
+            <label
+              htmlFor="audit-filter-select"
+              className="text-xs text-slate-600 dark:text-slate-400 font-mono"
+            >
               Filter:
             </label>
             <select
               id="audit-filter-select"
               value={filterPortfolio}
               onChange={(e) => setFilterPortfolio(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded px-2.5 py-1 font-mono focus:outline-none"
+              className="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-200 rounded px-2.5 py-1 font-mono focus:outline-none"
             >
               <option value="ALL">All Portfolios</option>
               <option value="port_global_alpha_01">Global Alpha</option>
@@ -97,7 +100,7 @@ export function AlertAuditHistory() {
       <CardContent>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-slate-950/70 text-slate-400 border-b border-slate-800 uppercase text-[10px]">
+            <thead className="bg-slate-100 dark:bg-slate-950/70 text-slate-700 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 uppercase text-[10px]">
               <tr>
                 <th className="p-3">Trigger Time</th>
                 <th className="p-3">Resolution Time</th>
@@ -108,15 +111,26 @@ export function AlertAuditHistory() {
                 <th className="p-3 text-center">Outcome</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
               {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="p-3 text-slate-300">{log.triggeredAt}</td>
-                  <td className="p-3 text-slate-400">{log.resolvedAt}</td>
-                  <td className="p-3 text-white font-semibold">{log.portfolioId}</td>
-                  <td className="p-3 text-slate-300 font-sans">{log.policyName}</td>
-                  <td className="p-3 text-right text-rose-400 font-bold">{log.peakValue}</td>
-                  <td className="p-3 text-right text-slate-400">{log.limitThreshold}</td>
+                <tr
+                  key={log.id}
+                  className="hover:bg-slate-100/60 dark:hover:bg-slate-900/40 transition-colors"
+                >
+                  <td className="p-3 text-slate-700 dark:text-slate-300">{log.triggeredAt}</td>
+                  <td className="p-3 text-slate-600 dark:text-slate-400">{log.resolvedAt}</td>
+                  <td className="p-3 text-slate-900 dark:text-white font-semibold">
+                    {log.portfolioId}
+                  </td>
+                  <td className="p-3 text-slate-700 dark:text-slate-300 font-sans">
+                    {log.policyName}
+                  </td>
+                  <td className="p-3 text-right text-rose-700 dark:text-rose-400 font-bold">
+                    {log.peakValue}
+                  </td>
+                  <td className="p-3 text-right text-slate-600 dark:text-slate-400">
+                    {log.limitThreshold}
+                  </td>
                   <td className="p-3 text-center">
                     <Badge
                       variant={

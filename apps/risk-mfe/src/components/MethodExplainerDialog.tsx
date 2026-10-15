@@ -18,10 +18,10 @@ export function MethodExplainerDialog() {
         <Button
           variant="outline"
           size="sm"
-          className="text-xs flex items-center gap-1.5 border-slate-700 bg-slate-900"
+          className="text-xs flex items-center gap-1.5 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
           aria-label="Open Value-at-Risk methodology explainer"
         >
-          <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+          <BookOpen className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
           Methodology Explainer
         </Button>
       </DialogTrigger>

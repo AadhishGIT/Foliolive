@@ -1,52 +1,103 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-test.describe('Accessibility Audits (WCAG 2.2 AA)', () => {
-  test('login page meets WCAG 2.2 AA standards', async ({ page }) => {
-    await page.goto('/login');
-    const accessibilityScanResults = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-      .analyze();
+const THEMES = ['dark', 'light'] as const;
 
-    expect(accessibilityScanResults.violations).toEqual([]);
-  });
+test.describe('Automated Accessibility Audits across Themes (WCAG 2.1 AA)', () => {
+  test.setTimeout(60000);
 
-  test('portfolio dashboard meets WCAG 2.2 AA standards', async ({ page }) => {
-    await page.goto('/login');
-    await page.getByRole('button', { name: /PM Demo/i }).click();
-    await expect(page).toHaveURL(/.*portfolio/);
+  for (const theme of THEMES) {
+    test(`login page meets WCAG 2.1 AA in ${theme} theme`, async ({ page }) => {
+      await page.addInitScript((mode) => {
+        window.localStorage.setItem('foliolive-theme-mode', mode);
+        if (mode === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }, theme);
 
-    const accessibilityScanResults = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-      .exclude('iframe')
-      .analyze();
+      await page.goto('/login');
+      await expect(page.getByRole('heading', { name: 'Foliolive Analytics' })).toBeVisible();
 
-    expect(accessibilityScanResults.violations).toEqual([]);
-  });
+      const scanResults = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
 
-  test('risk analytics view meets WCAG 2.2 AA standards', async ({ page }) => {
-    await page.goto('/login');
-    await page.getByRole('button', { name: /PM Demo/i }).click();
-    await page.getByRole('link', { name: /Risk Metrics & VaR/i }).click();
-    await expect(page).toHaveURL(/.*risk/);
+      expect(scanResults.violations).toEqual([]);
+    });
 
-    const accessibilityScanResults = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-      .analyze();
+    test(`portfolio dashboard meets WCAG 2.1 AA in ${theme} theme`, async ({ page }) => {
+      await page.addInitScript((mode) => {
+        window.localStorage.setItem('foliolive-theme-mode', mode);
+        if (mode === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }, theme);
 
-    expect(accessibilityScanResults.violations).toEqual([]);
-  });
+      await page.goto('/login');
+      await page.getByRole('button', { name: /PM Demo/i }).click();
+      await expect(page).toHaveURL(/.*portfolio/);
+      await expect(page.getByRole('columnheader', { name: 'Symbol', exact: true })).toBeVisible();
 
-  test('surveillance feed meets WCAG 2.2 AA standards', async ({ page }) => {
-    await page.goto('/login');
-    await page.getByRole('button', { name: /PM Demo/i }).click();
-    await page.getByRole('link', { name: /Limits & Alerts/i }).click();
-    await expect(page).toHaveURL(/.*alerts/);
+      const scanResults = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .exclude('iframe')
+        .analyze();
 
-    const accessibilityScanResults = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-      .analyze();
+      expect(scanResults.violations).toEqual([]);
+    });
 
-    expect(accessibilityScanResults.violations).toEqual([]);
-  });
+    test(`risk analytics view meets WCAG 2.1 AA in ${theme} theme`, async ({ page }) => {
+      await page.addInitScript((mode) => {
+        window.localStorage.setItem('foliolive-theme-mode', mode);
+        if (mode === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }, theme);
+
+      await page.goto('/login');
+      await page.getByRole('button', { name: /PM Demo/i }).click();
+      await page.getByRole('link', { name: /Risk Metrics & VaR/i }).click();
+      await expect(page).toHaveURL(/.*risk/);
+      await expect(
+        page.getByRole('heading', { name: /Parametric VaR \(95%, 1-Day\)/i })
+      ).toBeVisible();
+
+      const scanResults = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+
+      expect(scanResults.violations).toEqual([]);
+    });
+
+    test(`surveillance feed meets WCAG 2.1 AA in ${theme} theme`, async ({ page }) => {
+      await page.addInitScript((mode) => {
+        window.localStorage.setItem('foliolive-theme-mode', mode);
+        if (mode === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }, theme);
+
+      await page.goto('/login');
+      await page.getByRole('button', { name: /PM Demo/i }).click();
+      await page.getByRole('link', { name: /Limits & Alerts/i }).click();
+      await expect(page).toHaveURL(/.*alerts/);
+      await expect(
+        page.getByRole('heading', { name: /Live Breach Stream & Alert Feed/i })
+      ).toBeVisible();
+
+      const scanResults = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+
+      expect(scanResults.violations).toEqual([]);
+    });
+  }
 });

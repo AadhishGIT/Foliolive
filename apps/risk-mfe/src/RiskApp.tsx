@@ -71,20 +71,21 @@ export function RiskApp({
   return (
     <div className="space-y-6">
       {/* Top Banner & Explainer Dialog */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2.5">
-            <ShieldAlert className="w-6 h-6 text-amber-400" />
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+            <ShieldAlert className="w-6 h-6 text-amber-500 dark:text-amber-400" />
             Institutional Risk Engine & Value-at-Risk (VaR)
           </h1>
-          <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 flex items-center gap-2">
             <span>Portfolio ID:</span>
-            <span className="font-mono text-slate-200 font-semibold bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+            <span className="font-mono text-slate-800 dark:text-slate-200 font-semibold bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
               {currentPortfolioId}
             </span>
             <span>•</span>
             <span>
-              Confidence Intervals: <strong className="text-white">95% & 99%</strong>
+              Confidence Intervals:{' '}
+              <strong className="text-slate-900 dark:text-white">95% & 99%</strong>
             </span>
           </p>
         </div>
@@ -162,12 +163,14 @@ export function RiskApp({
             ].map((scenario) => (
               <div
                 key={scenario.name}
-                className="p-3.5 rounded-lg bg-slate-900 border border-slate-800 flex flex-col justify-between gap-2"
+                className="p-3.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between gap-2"
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="font-bold text-white font-sans text-sm">{scenario.name}</div>
-                    <div className="text-[11px] text-slate-400 font-sans mt-0.5">
+                    <div className="font-bold text-slate-900 dark:text-white font-sans text-sm">
+                      {scenario.name}
+                    </div>
+                    <div className="text-[11px] text-slate-600 dark:text-slate-400 font-sans mt-0.5">
                       {scenario.desc}
                     </div>
                   </div>
@@ -175,9 +178,9 @@ export function RiskApp({
                     {scenario.risk}
                   </Badge>
                 </div>
-                <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between">
-                  <span className="text-slate-400">P&L Impact:</span>
-                  <span className="text-rose-400 font-bold">
+                <div className="border-t border-slate-200 dark:border-slate-800/80 pt-2 flex items-center justify-between">
+                  <span className="text-slate-600 dark:text-slate-400">P&L Impact:</span>
+                  <span className="text-rose-700 dark:text-rose-400 font-bold">
                     {scenario.impact} ({scenario.magnitude})
                   </span>
                 </div>

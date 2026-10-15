@@ -129,10 +129,10 @@ export function SectorAllocationChart({ holdings }: SectorAllocationChartProps) 
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <PieIcon className="w-4 h-4 text-blue-400" />
+            <PieIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             Sector Diversification (D3 Donut)
           </CardTitle>
-          <span className="text-xs text-slate-400 font-mono">
+          <span className="text-xs text-slate-600 dark:text-slate-400 font-mono">
             {sectorData.length} Sectors Monitored
           </span>
         </div>
@@ -282,16 +282,18 @@ export function SectorAllocationChart({ holdings }: SectorAllocationChartProps) 
               onMouseEnter={() => setActiveSector(s)}
               onMouseLeave={() => setActiveSector(null)}
               onClick={() => setActiveSector(s)}
-              className="flex items-center justify-between py-0.5 hover:text-white transition-colors text-left"
+              className="flex items-center justify-between py-1 min-h-[24px] hover:text-slate-900 dark:hover:text-white transition-colors text-left"
             >
               <div className="flex items-center gap-1.5 truncate">
                 <span
                   className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
                   style={{ backgroundColor: s.color }}
                 />
-                <span className="text-slate-300 truncate text-[11px]">{s.name}</span>
+                <span className="text-slate-700 dark:text-slate-300 truncate text-[11px]">
+                  {s.name}
+                </span>
               </div>
-              <span className="text-slate-400 font-semibold">{s.percent}%</span>
+              <span className="text-slate-600 dark:text-slate-400 font-semibold">{s.percent}%</span>
             </button>
           ))}
         </div>

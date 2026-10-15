@@ -178,14 +178,14 @@ export function RiskLimitManager({ userRole = 'ROLE_PM' }: RiskLimitManagerProps
               <Sliders className="w-4 h-4 text-blue-400" />
               Risk Limit Policies & Mandate Rules
             </CardTitle>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
               Configure automated breach detection triggers across exposure and VaR thresholds.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             {!isPm && (
-              <Badge variant="outline" className="text-[10px] text-slate-400">
+              <Badge variant="outline" className="text-[10px] text-slate-600 dark:text-slate-400">
                 Read-Only (Requires PM Role)
               </Badge>
             )}
@@ -313,7 +313,7 @@ export function RiskLimitManager({ userRole = 'ROLE_PM' }: RiskLimitManagerProps
       <CardContent>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-slate-950/70 text-slate-400 border-b border-slate-800 uppercase text-[10px]">
+            <thead className="bg-slate-100 dark:bg-slate-950/70 text-slate-700 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 uppercase text-[10px]">
               <tr>
                 <th className="p-3">Policy Name</th>
                 <th className="p-3">Type</th>
@@ -324,22 +324,29 @@ export function RiskLimitManager({ userRole = 'ROLE_PM' }: RiskLimitManagerProps
                 {isPm && <th className="p-3 text-right">Actions</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
               {rules.map((rule) => {
                 const utilPercent = (rule.currentValue / rule.threshold) * 100;
                 return (
-                  <tr key={rule.id} className="hover:bg-slate-900/40 transition-colors">
-                    <td className="p-3 font-sans font-semibold text-white">{rule.name}</td>
-                    <td className="p-3 text-slate-400 text-[11px]">
+                  <tr
+                    key={rule.id}
+                    className="hover:bg-slate-100/60 dark:hover:bg-slate-900/40 transition-colors"
+                  >
+                    <td className="p-3 font-sans font-semibold text-slate-900 dark:text-white">
+                      {rule.name}
+                    </td>
+                    <td className="p-3 text-slate-600 dark:text-slate-400 text-[11px]">
                       {rule.type.replace(/_/g, ' ')}
                     </td>
-                    <td className="p-3 text-slate-300 font-semibold">{rule.target}</td>
-                    <td className="p-3 text-right text-white font-bold">
+                    <td className="p-3 text-slate-700 dark:text-slate-300 font-semibold">
+                      {rule.target}
+                    </td>
+                    <td className="p-3 text-right text-slate-900 dark:text-white font-bold">
                       {rule.unit === '$'
                         ? `$${rule.currentValue.toLocaleString()}`
                         : `${rule.currentValue.toFixed(1)}%`}
                     </td>
-                    <td className="p-3 text-right text-slate-300">
+                    <td className="p-3 text-right text-slate-700 dark:text-slate-300">
                       {rule.unit === '$'
                         ? `$${rule.threshold.toLocaleString()}`
                         : `${rule.threshold.toFixed(1)}%`}
@@ -366,7 +373,7 @@ export function RiskLimitManager({ userRole = 'ROLE_PM' }: RiskLimitManagerProps
                             variant="ghost"
                             size="sm"
                             onClick={() => handleOpenEdit(rule)}
-                            className="p-1 h-7 text-slate-400 hover:text-white"
+                            className="p-1 h-7 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                             aria-label={`Edit ${rule.name}`}
                           >
                             <Edit2 className="w-3.5 h-3.5" />

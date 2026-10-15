@@ -31,26 +31,36 @@ export function StatMetric({
   const isNegative = computedTrend === 'down';
 
   const trendColor = (() => {
-    if (!computedTrend || computedTrend === 'neutral') return 'text-slate-400';
+    if (!computedTrend || computedTrend === 'neutral') return 'text-slate-600 dark:text-slate-400';
     if (invertTrendColor) {
-      return isPositive ? 'text-rose-400' : 'text-emerald-400';
+      return isPositive
+        ? 'text-rose-700 dark:text-rose-400'
+        : 'text-emerald-700 dark:text-emerald-400';
     }
-    return isPositive ? 'text-emerald-400' : 'text-rose-400';
+    return isPositive
+      ? 'text-emerald-700 dark:text-emerald-400'
+      : 'text-rose-700 dark:text-rose-400';
   })();
 
   return (
     <div
       className={cn(
-        'p-4 rounded-lg bg-slate-900 border border-slate-800 flex flex-col justify-between',
+        'p-4 rounded-lg bg-card text-card-foreground border border-border shadow-sm flex flex-col justify-between',
         className
       )}
       {...props}
     >
-      <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</span>
+      <span className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+        {label}
+      </span>
       <div className="mt-2 flex items-baseline justify-between">
-        <span className="text-2xl font-bold font-mono tracking-tight text-white">
+        <span className="text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-white">
           {value}
-          {unit && <span className="text-sm font-normal text-slate-400 ml-1">{unit}</span>}
+          {unit && (
+            <span className="text-sm font-normal text-slate-600 dark:text-slate-400 ml-1">
+              {unit}
+            </span>
+          )}
         </span>
         {deltaPercent !== undefined && (
           <span

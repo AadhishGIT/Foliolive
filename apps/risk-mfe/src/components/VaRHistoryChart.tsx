@@ -100,8 +100,8 @@ export function VaRHistoryChart() {
             VaR Backtesting & Exceedance History (Kupiec Standard)
           </CardTitle>
           <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="text-slate-400">95% Breaches:</span>
-            <strong className="text-amber-400">
+            <span className="text-slate-600 dark:text-slate-400">95% Breaches:</span>
+            <strong className="text-amber-800 dark:text-amber-400">
               {breachCount95} / {data.length} ({((breachCount95 / data.length) * 100).toFixed(1)}%)
             </strong>
           </div>
