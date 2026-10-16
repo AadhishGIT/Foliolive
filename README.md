@@ -189,18 +189,18 @@ Additional container endpoints:
 
 All metrics below are derived from actual test executions (zero fabrication):
 
-| Suite / Quality Gate                  | Tooling                        | Scope                                                     | Measured Result                                  | Status      |
-| :------------------------------------ | :----------------------------- | :-------------------------------------------------------- | :----------------------------------------------- | :---------- |
-| **E2E Integration**                   | Playwright (Chromium)          | Auth, Portfolio Grid, Risk Math, Alerts Surveillance      | **26 of 26 tests passed** (1.2m duration)        | **Passing** |
-| **Accessibility (WCAG 2.2 AA)**       | `@axe-core/playwright`         | All dashboard views, dialogs, charts & live regions       | **0 violations** (100% compliant)                | **Passing** |
-| **Unit & Integration (Frontend/BFF)** | Vitest + React Testing Library | Tokens, components, event-bus, GBM simulator, auth        | **78 of 78 tests passed** (46 UI, 32 BFF)        | **Passing** |
-| **Core API Services**                 | JUnit 5 + Mockito              | Domain entities, risk math, portfolios, positions, limits | **38 of 38 tests passed**                        | **Passing** |
-| **Service Layer Coverage**            | JaCoCo                         | Spring Boot service layer instruction coverage            | **90.76% instruction coverage** (1936/2133)      | **Passing** |
-| **Grid Virtualization Scaling**       | TanStack Virtual               | Holdings grid 500 rows & 10,000-row stress mode           | **140–210 active DOM nodes** (333x reduction)    | **Passing** |
-| **Real-Time Stream Coalescing**       | In-memory batcher              | 100 ticks/sec simulator stress mode                       | **10 batch packets/sec** (90% network reduction) | **Passing** |
-| **Cloud Deployment IaC**              | Terraform                      | AWS Free Tier (ECS Fargate, RDS, S3/CloudFront)           | **Valid HCL & IaC definitions** in `infra/aws/`  | **Passing** |
+| Suite / Quality Gate                  | Tooling                        | Scope                                                             | Measured Result                                             | Status      |
+| :------------------------------------ | :----------------------------- | :---------------------------------------------------------------- | :---------------------------------------------------------- | :---------- |
+| **E2E Integration**                   | Playwright (Chromium)          | Auth, Portfolio Grid, Risk Math, Alerts Surveillance              | **26 of 26 tests passed** (1.2m duration)                   | **Passing** |
+| **Accessibility (WCAG 2.2 AA)**       | `@axe-core/playwright`         | All dashboard views, dialogs, charts & live regions               | **0 violations** (100% compliant)                           | **Passing** |
+| **Unit & Integration (Frontend/BFF)** | Vitest + React Testing Library | Tokens, components, event-bus, GBM simulator, auth                | **78 of 78 tests passed** (46 UI, 32 BFF)                   | **Passing** |
+| **Core API Services**                 | JUnit 5 + Mockito              | Domain entities, risk math, portfolios, positions, limits         | **38 of 38 tests passed**                                   | **Passing** |
+| **Service Layer Coverage**            | JaCoCo                         | Spring Boot service layer instruction coverage                    | **90.76% instruction coverage** (1936/2133)                 | **Passing** |
+| **Grid Virtualization Scaling**       | TanStack Virtual               | Holdings grid 500 rows & 10,000-row stress mode                   | **140–210 active DOM nodes** (333x reduction)               | **Passing** |
+| **Real-Time Stream Coalescing**       | In-memory batcher              | 100 ticks/sec simulator stress mode                               | **10 batch packets/sec** (90% network reduction)            | **Passing** |
+| **Cloud Deployment IaC**              | Terraform                      | AWS Free Tier (Single EC2 Docker Compose, S3/CloudFront OAC, SSM) | **Valid HCL & one-command deploy/teardown** in `infra/aws/` | **Passing** |
 
-See [docs/screenshots/](docs/screenshots/README.md) for verified high-resolution application screenshots, [docs/a11y.md](docs/a11y.md) for accessibility audits, and [docs/performance.md](docs/performance.md) for detailed performance benchmarks.
+See [docs/screenshots/](docs/screenshots/README.md) for verified high-resolution application screenshots, [docs/a11y.md](docs/a11y.md) for accessibility audits, [docs/performance.md](docs/performance.md) for performance benchmarks, and [infra/aws/README.md](infra/aws/README.md) for the AWS Free-Tier deployment guide.
 
 ---
 
@@ -270,6 +270,22 @@ Connect to `ws://localhost:4000/ws?token=<ACCESS_TOKEN>`.
 - `GET /api/market-overview`: Snapshot of all 27 instruments with 24h highs, lows, and changes.
 - `GET /api/portfolios`: Portfolio list with current mark-to-market summaries.
 - `GET /metrics`: Prometheus metrics scraper endpoint.
+
+---
+
+## AWS Free-Tier Deployment
+
+Foliolive deploys strictly within the **AWS Free Tier ($0.00/month)** using a single `t3.micro`/`t2.micro` EC2 instance running Docker Compose behind a multi-origin CloudFront distribution with S3 Origin Access Control (OAC).
+
+```bash
+# Automated one-command deployment
+./infra/aws/deploy.sh
+
+# One-command teardown (zero lingering charges)
+./infra/aws/teardown.sh
+```
+
+See [infra/aws/README.md](infra/aws/README.md) for full architecture topology, cost model breakdown, and [ADR-0012](docs/adr/0012-aws-free-tier-single-ec2-docker-compose-vs-ecs-alb.md) for architectural trade-offs.
 
 ---
 
