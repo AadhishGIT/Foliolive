@@ -25,6 +25,7 @@ import {
 export interface AuthenticatedWebSocket extends WebSocket {
   isAlive: boolean;
   connectionId: string;
+  correlationId: string;
   user: TokenPayload;
   subscribedTopics: Set<string>;
 }
@@ -101,8 +102,13 @@ export class WebSocketGateway {
       // Upgrade connection
       this.wss.handleUpgrade(request, socket, head, (ws) => {
         const client = ws as AuthenticatedWebSocket;
+        const corrId =
+          (request.headers['x-correlation-id'] as string) ||
+          (query.correlationId as string) ||
+          `ws_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         client.isAlive = true;
-        client.connectionId = `ws_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        client.connectionId = `conn_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        client.correlationId = corrId;
         client.user = user;
         client.subscribedTopics = new Set<string>();
 
@@ -119,6 +125,7 @@ export class WebSocketGateway {
       logger.info(
         {
           connectionId: client.connectionId,
+          correlationId: client.correlationId,
           user: client.user.sub,
           role: client.user.role,
         },

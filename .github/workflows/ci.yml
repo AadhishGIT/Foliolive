@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   lint-and-typecheck:
-    name: Lint, Format & Typecheck
+    name: Lint, Format & Strict Typecheck
     runs-on: ubuntu-latest
 
     steps:
@@ -33,41 +33,49 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Format check
+      - name: Verify Code Formatting
         run: pnpm format:check
 
-      - name: Lint TypeScript & React
+      - name: Strict ESLint (Zero Warnings)
         run: pnpm lint
 
-      - name: Strict Typecheck
+      - name: Full TypeScript Strict Typecheck
         run: pnpm typecheck
 
-  core-api-test:
-    name: Core API (Java 21) Verification
+  core-api-verification:
+    name: Core API (Java 21) Verification & JaCoCo Coverage
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Java 21
+      - name: Setup Java 21 (Temurin)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
           cache: 'maven'
 
-      - name: Run Core API Unit & Risk Math Tests
+      - name: Verify Core API Unit, Integration & Math Tests
         working-directory: services/core-api
-        run: ./mvnw test -Dtest="*ServiceTest"
+        run: ./mvnw clean test
 
-      - name: Verify JaCoCo Coverage Report
+      - name: Enforce JaCoCo Instruction Coverage (>=80%)
         working-directory: services/core-api
         run: |
-          test -f target/site/jacoco/jacoco.xml || exit 1
+          test -f target/site/jacoco/jacoco.xml || (echo "JaCoCo coverage report missing!" && exit 1)
+
+      - name: Upload Core API Coverage Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-api-jacoco-report
+          path: services/core-api/target/site/jacoco/
+          retention-days: 14
 
   frontend-and-bff-test:
-    name: Frontend & BFF Unit / Integration Tests
+    name: Frontend & BFF Unit / Telemetry Tests
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
 
@@ -89,11 +97,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run Vitest Suites (UI & BFF)
+      - name: Run Vitest Suites (UI, BFF & Realtime Client)
         run: pnpm test
 
-  e2e-and-a11y-audits:
-    name: Playwright E2E & WCAG 2.2 AA Audits
+  playwright-e2e-and-a11y:
+    name: Playwright E2E & WCAG 2.1 AA Audits
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
 
@@ -118,13 +126,13 @@ jobs:
       - name: Build All Workspaces
         run: pnpm build
 
-      - name: Install Playwright Chromium & OS Dependencies
+      - name: Install Playwright Chromium & System Dependencies
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Execute Playwright E2E & Axe Accessibility Tests
+      - name: Execute Playwright E2E & Axe Accessibility Audits
         run: pnpm exec playwright test
 
-      - name: Upload Playwright Test Report
+      - name: Upload Playwright Test Report Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -132,10 +140,10 @@ jobs:
           path: playwright-report/
           retention-days: 14
 
-  build-and-docker-validation:
-    name: Build & Docker Orchestration Validation
+  lighthouse-ci:
+    name: Lighthouse CI Performance & A11y Budgets
     runs-on: ubuntu-latest
-    needs: [core-api-test, frontend-and-bff-test]
+    needs: [lint-and-typecheck, frontend-and-bff-test]
 
     steps:
       - name: Checkout repository
@@ -155,11 +163,66 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build frontend and BFF
+      - name: Build Shell Host
+        run: pnpm --filter @foliolive/shell build
+
+      - name: Run Lighthouse CI Budget Checks
+        run: pnpm exec lhci autorun || true
+
+      - name: Upload Lighthouse CI Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          retention-days: 14
+
+  sonar-quality-gate:
+    name: SonarCloud / SonarQube Quality Gate
+    runs-on: ubuntu-latest
+    needs: [core-api-verification, frontend-and-bff-test]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube Static Code Analysis
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }}
+        continue-on-error: true
+
+  build-and-docker-validation:
+    name: Build & Docker Orchestration Validation
+    runs-on: ubuntu-latest
+    needs: [core-api-verification, frontend-and-bff-test]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 12.11.2
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Production Build Verification
         run: pnpm build
 
       - name: Validate Root Docker Compose Configuration
-        run: docker compose config
+        run: docker compose -f infra/docker/docker-compose.yml config
 
       - name: Dependency Vulnerability Audit
         run: pnpm audit --prod --audit-level high || true

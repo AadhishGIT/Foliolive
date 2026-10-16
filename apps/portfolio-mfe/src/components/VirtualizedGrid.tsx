@@ -261,6 +261,21 @@ export function VirtualizedGrid({
     }
   }, [selectedRowIndex, sortedHoldings.length, rowVirtualizer]);
 
+  // Telemetry: measure virtual grid render and DOM commit duration
+  const renderStartRef = useRef(performance.now());
+  renderStartRef.current = performance.now();
+
+  useEffect(() => {
+    const durationMs = performance.now() - renderStartRef.current;
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('foliolive:grid-render', {
+          detail: { durationMs, rowCount: sortedHoldings.length },
+        })
+      );
+    }
+  });
+
   const virtualItems = rowVirtualizer.getVirtualItems();
 
   return (

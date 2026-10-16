@@ -6,6 +6,7 @@ import type {
   LivePortfolioUpdate,
 } from '@foliolive/shared-types';
 import type { MarketSimulator } from './simulator';
+import { activeAlertsGauge, alertsBreachCounter } from './metrics';
 
 export interface InMemPosition {
   id: string;
@@ -549,7 +550,21 @@ export class RealtimeEngine {
     };
   }
 
+  private updateAlertGauges(): void {
+    const counts = { INFO: 0, WARNING: 0, CRITICAL: 0 };
+    for (const a of this.activeAlerts.values()) {
+      if (a.severity in counts) {
+        counts[a.severity as 'INFO' | 'WARNING' | 'CRITICAL']++;
+      }
+    }
+    activeAlertsGauge.set({ severity: 'INFO' }, counts.INFO);
+    activeAlertsGauge.set({ severity: 'WARNING' }, counts.WARNING);
+    activeAlertsGauge.set({ severity: 'CRITICAL' }, counts.CRITICAL);
+  }
+
   private notifyAlertFired(alert: AlertNotification): void {
+    alertsBreachCounter.inc({ severity: alert.severity, type: alert.type });
+    this.updateAlertGauges();
     for (const cb of this.onAlertFiredCallbacks) {
       cb(alert);
     }
@@ -562,6 +577,7 @@ export class RealtimeEngine {
     currentValue: number;
     thresholdValue: number;
   }): void {
+    this.updateAlertGauges();
     for (const cb of this.onAlertClearedCallbacks) {
       cb(data);
     }

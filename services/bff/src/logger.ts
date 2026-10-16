@@ -15,6 +15,12 @@ export const logger = pino({
 
 export const httpLogger = pinoHttp({
   logger,
+  customProps: (req) => ({
+    correlationId:
+      (req as unknown as { correlationId?: string }).correlationId ||
+      req.headers['x-correlation-id'] ||
+      'none',
+  }),
   autoLogging: {
     ignore: (req) => {
       // Don't log spammy health and metrics polls

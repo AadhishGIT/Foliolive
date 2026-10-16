@@ -1,16 +1,91 @@
+import crypto from 'node:crypto';
 import http from 'node:http';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import { z } from 'zod';
 import { config } from './config';
 import { httpLogger, logger } from './logger';
-import { metricsRegistry } from './metrics';
+import {
+  metricsRegistry,
+  webVitalsLcpHistogram,
+  webVitalsInpHistogram,
+  webVitalsClsHistogram,
+  frontendTimeToFirstUpdateHistogram,
+  frontendGridRenderDurationHistogram,
+  frontendWsReconnectsCounter,
+} from './metrics';
 import { MarketSimulator } from './simulator';
 import { RealtimeEngine } from './realtime-engine';
 import { WebSocketGateway } from './websocket';
 import { createAuthRouter } from './routes/auth.routes';
 import { createApiRouter } from './routes/api.routes';
+
+const TelemetryMetricSchema = z.object({
+  name: z.string(),
+  value: z.number(),
+  rating: z.string().optional(),
+  unit: z.string().optional(),
+  correlationId: z.string().optional(),
+  page: z.string().optional(),
+  timestamp: z.string().optional(),
+});
+
+const TelemetryRequestSchema = z.union([
+  TelemetryMetricSchema,
+  z.array(TelemetryMetricSchema),
+  z.object({
+    events: z.array(TelemetryMetricSchema),
+  }),
+]);
+
+function processTelemetryMetric(
+  metric: z.infer<typeof TelemetryMetricSchema>,
+  reqCorrelationId: string
+): void {
+  const { name, value, rating = 'unspecified' } = metric;
+  const corrId = metric.correlationId || reqCorrelationId;
+
+  logger.info(
+    {
+      telemetry: { name, value, rating, unit: metric.unit, page: metric.page },
+      correlationId: corrId,
+    },
+    'Frontend telemetry metric ingested'
+  );
+
+  switch (name) {
+    case 'LCP': {
+      const sec = value > 20 ? value / 1000 : value;
+      webVitalsLcpHistogram.observe({ rating }, sec);
+      break;
+    }
+    case 'INP': {
+      const sec = value > 20 ? value / 1000 : value;
+      webVitalsInpHistogram.observe({ rating }, sec);
+      break;
+    }
+    case 'CLS': {
+      webVitalsClsHistogram.observe({ rating }, value);
+      break;
+    }
+    case 'timeToFirstLiveUpdateMs': {
+      const sec = value > 20 ? value / 1000 : value;
+      frontendTimeToFirstUpdateHistogram.observe(sec);
+      break;
+    }
+    case 'gridRenderDurationMs': {
+      const sec = value > 20 ? value / 1000 : value;
+      frontendGridRenderDurationHistogram.observe(sec);
+      break;
+    }
+    case 'wsReconnectCount': {
+      frontendWsReconnectsCounter.inc(value || 1);
+      break;
+    }
+  }
+}
 
 export interface BffServerInstance {
   app: express.Application;
@@ -28,6 +103,17 @@ export function createBffServer(options?: {
 }): BffServerInstance {
   const app = express();
   const server = http.createServer(app);
+
+  // Distributed Correlation ID tracing middleware
+  app.use((req: Request, res: Response, next) => {
+    const rawId = req.headers['x-correlation-id'];
+    const correlationId =
+      typeof rawId === 'string' && rawId.trim().length > 0 ? rawId.trim() : crypto.randomUUID();
+    (req as Request & { correlationId?: string }).correlationId = correlationId;
+    req.headers['x-correlation-id'] = correlationId;
+    res.setHeader('X-Correlation-ID', correlationId);
+    next();
+  });
 
   // Security headers with Helmet
   app.use(
@@ -54,17 +140,19 @@ export function createBffServer(options?: {
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Correlation-ID'],
+      exposedHeaders: ['X-Correlation-ID'],
     })
   );
 
   // Cookie parser for httpOnly refresh tokens
   app.use(cookieParser());
 
-  // JSON request body parser
+  // JSON request body parser (supports text/plain fallback for sendBeacon)
   app.use(express.json());
+  app.use(express.text({ type: ['text/plain', 'application/json'] }));
 
-  // HTTP structured logging
+  // HTTP structured logging with correlationId
   app.use(httpLogger);
 
   // Prometheus /metrics endpoint
@@ -86,6 +174,67 @@ export function createBffServer(options?: {
       timestamp: new Date().toISOString(),
     });
   });
+
+  // Frontend Core Web Vitals & Real-User Monitoring (RUM) Telemetry Ingestion
+  const handleTelemetry = (req: Request, res: Response) => {
+    try {
+      let bodyData = req.body;
+      if (typeof bodyData === 'string') {
+        try {
+          bodyData = JSON.parse(bodyData);
+        } catch {
+          // not json string
+        }
+      }
+
+      const parseResult = TelemetryRequestSchema.safeParse(bodyData);
+      if (!parseResult.success) {
+        res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_TELEMETRY_PAYLOAD',
+            message: parseResult.error.errors.map((e) => e.message).join(', '),
+          },
+        });
+        return;
+      }
+
+      const reqCorrId =
+        (req as Request & { correlationId?: string }).correlationId ||
+        (req.headers['x-correlation-id'] as string) ||
+        'none';
+      const payload = parseResult.data;
+
+      let ingestedCount = 0;
+      if (Array.isArray(payload)) {
+        for (const item of payload) {
+          processTelemetryMetric(item, reqCorrId);
+          ingestedCount++;
+        }
+      } else if ('events' in payload && Array.isArray(payload.events)) {
+        for (const item of payload.events) {
+          processTelemetryMetric(item, reqCorrId);
+          ingestedCount++;
+        }
+      } else {
+        processTelemetryMetric(payload as z.infer<typeof TelemetryMetricSchema>, reqCorrId);
+        ingestedCount++;
+      }
+
+      res.status(200).json({
+        success: true,
+        ingested: ingestedCount,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error({ err: message }, 'Failed to process telemetry payload');
+      res.status(500).json({ success: false, error: { message } });
+    }
+  };
+
+  app.post('/telemetry', handleTelemetry);
+  app.post('/api/telemetry', handleTelemetry);
 
   // Instantiate Simulator and Realtime Engine
   const simulator = new MarketSimulator(

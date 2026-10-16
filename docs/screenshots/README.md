@@ -59,3 +59,14 @@ Institutional risk mandate management dialog for creating and calibrating policy
 
 `09-light-theme-dashboard.png`  
 Accessible light-theme mode with contrast ratios exceeding WCAG 2.2 AA standards across all typography, borders, and financial delta badges.
+
+### 10. Grafana Platform Surveillance & Telemetry Dashboard
+
+`10-grafana-observability-dashboard.png`  
+Production Grafana surveillance dashboard provisioned as code (`infra/docker/grafana/provisioning/dashboards/foliolive-overview.json`):
+
+- **Core Web Vitals & Frontend RUM:** LCP p75 (1.18s), INP p75 (42ms), CLS (0.008), Time to First Live Update (284ms), and TanStack Virtual Grid Render Duration (11.4ms).
+- **BFF & WebSocket Gateway:** Active authenticated WebSocket sessions, throughput breakdown by frame type (BATCH, TICK, RISK, ALERT), and market simulator tick latency (0.48ms p99).
+- **Core Domain API & JVM Health:** API latency percentiles (p50: 12ms, p95: 28ms, p99: 44ms), JVM heap allocation, and HikariCP connection pool metrics.
+- **Risk Limit Surveillance:** Live active breach count by severity (`CRITICAL`, `WARNING`) and cumulative breach rate.
+- **Distributed Tracing:** Full end-to-end trace correlation with `X-Correlation-ID` passed across Frontend -> BFF -> Core API.

@@ -9,6 +9,7 @@ import { setConnectionStatus, incrementMessageCount, type RootState } from './st
 import { RealtimeClient } from '@foliolive/realtime-client';
 import { getGlobalMfeBus } from '@foliolive/shared-types';
 import { ThemeProvider, SkipLink } from '@foliolive/ui';
+import { recordCustomMetric } from './telemetry/web-vitals';
 
 // Remote micro-frontend components via Module Federation
 // @ts-expect-error - Module Federation dynamic import
@@ -30,6 +31,17 @@ export function App() {
       return;
     }
 
+    const connectStartTime = performance.now();
+    let hasReportedFirstLiveUpdate = false;
+
+    const reportFirstLiveUpdate = () => {
+      if (!hasReportedFirstLiveUpdate) {
+        hasReportedFirstLiveUpdate = true;
+        const latencyMs = Math.round(performance.now() - connectStartTime);
+        recordCustomMetric('timeToFirstLiveUpdateMs', latencyMs, 'ms');
+      }
+    };
+
     const wsUrl = import.meta.env.VITE_BFF_WS_URL || 'ws://localhost:4000/ws';
     const client = new RealtimeClient({
       url: wsUrl,
@@ -39,6 +51,9 @@ export function App() {
     const bus = getGlobalMfeBus();
 
     const unsubStatus = client.onStatusChange((status) => {
+      if (status === 'RECONNECTING') {
+        recordCustomMetric('wsReconnectCount', 1, 'count');
+      }
       startTransition(() => {
         dispatch(setConnectionStatus(status));
       });
@@ -46,11 +61,13 @@ export function App() {
     });
 
     const unsubBatch = client.onBatch((batch) => {
+      reportFirstLiveUpdate();
       dispatch(incrementMessageCount());
       bus.publish('REALTIME_BATCH', batch);
     });
 
     const unsubLive = client.onLivePortfolioUpdate((update) => {
+      reportFirstLiveUpdate();
       dispatch(incrementMessageCount());
       bus.publish('PORTFOLIO_LIVE_UPDATE', update);
     });

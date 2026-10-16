@@ -64,6 +64,10 @@ export class RealtimeClient {
     return this.status;
   }
 
+  public getReconnectAttempts(): number {
+    return this.reconnectAttempts;
+  }
+
   public connect(): void {
     if (this.ws && (this.status === 'CONNECTED' || this.status === 'CONNECTING')) {
       return;

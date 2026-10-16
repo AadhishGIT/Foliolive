@@ -18,9 +18,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final CorrelationIdFilter correlationIdFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter, CorrelationIdFilter correlationIdFilter) {
         this.jwtFilter = jwtFilter;
+        this.correlationIdFilter = correlationIdFilter;
     }
 
     @Bean
@@ -45,7 +47,8 @@ public class SecurityConfig {
                 ).permitAll()
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(correlationIdFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(jwtFilter, CorrelationIdFilter.class);
 
         return http.build();
     }
