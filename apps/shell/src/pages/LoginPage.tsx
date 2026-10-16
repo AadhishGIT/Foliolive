@@ -264,6 +264,24 @@ export function LoginPage() {
                 </Badge>
               </Button>
             </div>
+
+            {/* Public Demo Credentials Reference */}
+            <div className="w-full rounded-md bg-slate-50 dark:bg-slate-950/70 p-2.5 text-[11px] border border-slate-200 dark:border-slate-800 space-y-1">
+              <div className="flex items-center justify-between font-mono">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  Public Demo (Read-Only):
+                </span>
+                <span className="text-blue-600 dark:text-blue-400">viewer_demo / Password123!</span>
+              </div>
+              <div className="flex items-center justify-between font-mono">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                  PM Lead (Read/Write):
+                </span>
+                <span className="text-emerald-600 dark:text-emerald-400">
+                  pm_demo / Password123!
+                </span>
+              </div>
+            </div>
           </CardFooter>
         </Card>
 

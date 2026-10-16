@@ -1,4 +1,5 @@
-# VPC and Networking Configuration
+# VPC and Networking Configuration for Foliolive Free Tier
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -21,47 +22,14 @@ resource "aws_internet_gateway" "gw" {
   }
 }
 
-# Public Subnets (for ALB & ECS Tasks with Public IP in Free Tier)
-resource "aws_subnet" "public_1" {
+resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${var.project_name}-public-1"
-  }
-}
-
-resource "aws_subnet" "public_2" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.2.0/24"
-  availability_zone       = data.aws_availability_zones.available.names[1]
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "${var.project_name}-public-2"
-  }
-}
-
-# Private Subnets (for RDS PostgreSQL)
-resource "aws_subnet" "private_1" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.10.0/24"
-  availability_zone = data.aws_availability_zones.available.names[0]
-
-  tags = {
-    Name = "${var.project_name}-private-1"
-  }
-}
-
-resource "aws_subnet" "private_2" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.11.0/24"
-  availability_zone = data.aws_availability_zones.available.names[1]
-
-  tags = {
-    Name = "${var.project_name}-private-2"
+    Name = "${var.project_name}-public-subnet"
   }
 }
 
@@ -78,39 +46,65 @@ resource "aws_route_table" "public" {
   }
 }
 
-resource "aws_route_table_association" "public_1" {
-  subnet_id      = aws_subnet.public_1.id
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "public_2" {
-  subnet_id      = aws_subnet.public_2.id
-  route_table_id = aws_route_table.public.id
-}
-
-# Security Groups
-resource "aws_security_group" "alb" {
-  name        = "${var.project_name}-alb-sg"
-  description = "Allow inbound HTTP/HTTPS traffic from anywhere"
+# Security Group for Backend EC2 Instance
+resource "aws_security_group" "backend" {
+  name        = "${var.project_name}-backend-sg"
+  description = "Security group for Foliolive backend EC2 instance (Free Tier)"
   vpc_id      = aws_vpc.main.id
 
+  # Allow HTTP for CloudFront reverse proxy and health probes
   ingress {
-    description = "HTTP"
+    description = "HTTP reverse proxy"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Allow HTTPS for direct Let's Encrypt / Caddy SSL
   ingress {
-    description = "HTTPS"
+    description = "HTTPS access"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Allow BFF Gateway direct port
+  ingress {
+    description = "BFF Gateway & WebSocket direct port"
+    from_port   = 4000
+    to_port     = 4000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow Core API direct port
+  ingress {
+    description = "Core Domain API direct port"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow SSH for admin access (only if key specified, or open for convenience)
+  ingress {
+    description = "SSH administrative access"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # All outbound traffic allowed
   egress {
+    description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -118,65 +112,6 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name = "${var.project_name}-alb-sg"
-  }
-}
-
-resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.project_name}-ecs-tasks-sg"
-  description = "Allow traffic from ALB to ECS tasks"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description     = "BFF Port from ALB"
-    from_port       = 4000
-    to_port         = 4000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-  }
-
-  ingress {
-    description     = "Core API Port from ALB and BFF"
-    from_port       = 8080
-    to_port         = 8080
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-    self            = true
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.project_name}-ecs-tasks-sg"
-  }
-}
-
-resource "aws_security_group" "rds" {
-  name        = "${var.project_name}-rds-sg"
-  description = "Allow PostgreSQL traffic from ECS tasks"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description     = "PostgreSQL from ECS tasks"
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ecs_tasks.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.project_name}-rds-sg"
+    Name = "${var.project_name}-backend-sg"
   }
 }

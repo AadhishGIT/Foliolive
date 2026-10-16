@@ -1,126 +1,164 @@
-# Foliolive AWS Free Tier Deployment Guide
+# Foliolive AWS Free-Tier Infrastructure Guide
 
-This directory contains the Infrastructure as Code (IaC) definitions using Terraform to deploy the complete Foliolive institutional platform to the **AWS Free Tier**.
+This directory contains the Infrastructure as Code (IaC) definitions using [HashiCorp Terraform](https://www.terraform.io/) to deploy the complete Foliolive institutional platform strictly within the **AWS Free Tier**.
+
+See **[ADR-0012: AWS Free Tier Single EC2 Docker Compose vs ECS/ALB](../../docs/adr/0012-aws-free-tier-single-ec2-docker-compose-vs-ecs-alb.md)** for detailed technical rationale, memory allocation budgets, and trade-off analysis.
 
 ---
 
 ## Architecture Topology
 
 ```
-                                  [ User Browser ]
-                                         │
-                    ┌────────────────────┴────────────────────┐
-                    │ HTTPS (Port 443)                        │ WSS / HTTP
-                    ▼                                         ▼
-         ┌─────────────────────┐                   ┌─────────────────────┐
-         │  Amazon CloudFront  │                   │ Application Load    │
-         │  (Global Edge CDN)  │                   │ Balancer (ALB)      │
-         └──────────┬──────────┘                   └──────────┬──────────┘
-                    │ S3 Read                                 │ Path Routing
-                    ▼                                         ├────────────────────────┐
-         ┌─────────────────────┐                              ▼                        ▼
-         │   Amazon S3 Bucket  │                   ┌─────────────────────┐  ┌─────────────────────┐
-         │  (Shell & MFE Bundles)                  │   BFF Gateway       │  │   Core Domain API   │
-         └─────────────────────┘                   │   (ECS Fargate)     │  │   (ECS Fargate)     │
-                                                   │   Node.js 20 / ws   │  │   Spring Boot 3     │
-                                                   └──────────┬──────────┘  └──────────┬──────────┘
-                                                              │                        │ JPA / Flyway
-                                                              └────────────────────────┼────────┐
-                                                                                       ▼        ▼
-                                                                            ┌─────────────────────┐
-                                                                            │  Amazon RDS Postgres│
-                                                                            │  (db.t4g.micro)     │
-                                                                            └─────────────────────┘
+                                      [ Institutional Clients ]
+                                                  │
+                                                  ▼ HTTPS (Port 443)
+                                       ┌─────────────────────┐
+                                       │  Amazon CloudFront  │
+                                       │  (Global Edge CDN)  │
+                                       └──────────┬──────────┘
+                         ┌────────────────────────┴────────────────────────┐
+                         │ /assets/*, *.html, *remoteEntry.js              │ /api/*, /auth/*, /ws*, /telemetry*
+                         ▼                                                 ▼ (HTTP port 80 over VPC)
+              ┌─────────────────────┐                           ┌─────────────────────────────────────────┐
+              │   Amazon S3 Bucket  │                           │   Amazon EC2 (t3.micro, 1 vCPU, 1 GB)   │
+              │  (Origin Access Ctrl)                           │   20 GB gp3 EBS (with 2 GB Swapfile)    │
+              │  • Shell Host (3100)│                           │                                         │
+              │  • Portfolio MFE    │                           │  ┌───────────────────────────────────┐  │
+              │  • Risk MFE         │                           │  │     Caddy 2 (Reverse Proxy)       │  │
+              │  • Alerts MFE       │                           │  └─────────┬─────────────────────────┘  │
+              └─────────────────────┘                           │            │                            │
+                                                                │            ├──────────────┐             │
+                                                                │            ▼              ▼             │
+                                                                │  ┌──────────────────┐ ┌──────────────┐  │
+                                                                │  │   BFF Gateway    │ │   Core API   │  │
+                                                                │  │ (Node 20, 192MB) │ │ (Java 21,    │  │
+                                                                │  │ • WebSocket Gate │ │  384MB JRE)  │  │
+                                                                │  │ • Rate Limiter   │ │ • Flyway     │  │
+                                                                │  │ • Telemetry / RUM│ │ • Risk Math  │  │
+                                                                │  └─────────┬────────┘ └──────┬───────┘  │
+                                                                │            │                 │          │
+                                                                │            └────────┬────────┘          │
+                                                                │                     ▼                   │
+                                                                │           ┌──────────────────┐          │
+                                                                │           │  PostgreSQL 16   │          │
+                                                                │           │   (128 MB RAM)   │          │
+                                                                │           └──────────────────┘          │
+                                                                └─────────────────────────────────────────┘
 ```
 
 ---
 
-## Free-Tier Resource Allocation
+## Free-Tier Cost Model & Budget Analysis
 
-| Resource               | AWS Service           | Specification                                                   | Monthly Free Tier Limit        |
-| :--------------------- | :-------------------- | :-------------------------------------------------------------- | :----------------------------- |
-| **Frontend CDN**       | CloudFront            | Global edge caching, HTTP/2 & HTTP/3                            | 1 TB data transfer-out / month |
-| **Frontend Storage**   | Amazon S3             | Versioned static bundles with CORS                              | 5 GB standard storage          |
-| **Relational DB**      | Amazon RDS PostgreSQL | `db.t4g.micro`, 20 GB gp3 storage                               | 750 hours/month                |
-| **Backend Containers** | Amazon ECS Fargate    | `core-api` (0.5 vCPU, 1 GB RAM) & `bff` (0.25 vCPU, 0.5 GB RAM) | Spot / low-compute allocation  |
-| **Telemetry Logs**     | Amazon CloudWatch     | 7-day retention log stream                                      | 5 GB ingestion & archiving     |
+| Component          | AWS Resource         | Specification                            | Monthly Free Tier Allowance               | First 12 Months Cost | Post-12 Months Ongoing Cost   |
+| :----------------- | :------------------- | :--------------------------------------- | :---------------------------------------- | :------------------- | :---------------------------- |
+| **Edge CDN**       | Amazon CloudFront    | PriceClass_100 (NA/EU), TLS 1.3, OAC     | 1.0 TB data out / month, 10M requests     | **$0.00 / mo**       | $0.00 / mo (Always Free Tier) |
+| **Static Storage** | Amazon S3            | Standard storage, private ACL            | 5.0 GB storage, 20,000 GET requests       | **$0.00 / mo**       | < $0.02 / mo (< 50 MB used)   |
+| **Compute**        | Amazon EC2           | `t3.micro` (or `t2.micro`), 1 vCPU, 1 GB | 750 hours / month (1 continuous instance) | **$0.00 / mo**       | ~$7.50 / mo                   |
+| **Block Storage**  | Amazon EBS           | 20 GB gp3 volume (3,000 IOPS, 125 MB/s)  | 30.0 GB gp2/gp3 total storage             | **$0.00 / mo**       | ~$1.60 / mo (20 GB × $0.08)   |
+| **Secrets Mgmt**   | SSM Parameter Store  | Standard parameters (JWT, DB passwords)  | Free tier unlimited standard calls        | **$0.00 / mo**       | **$0.00 / mo**                |
+| **Edge Rewrite**   | CloudFront Functions | Viewer-request JavaScript router         | 2,000,000 invocations / month             | **$0.00 / mo**       | **$0.00 / mo**                |
+| **Load Balancer**  | _None (Eliminated)_  | Multi-origin CloudFront direct to Caddy  | N/A ($18+/mo avoided)                     | **$0.00 / mo**       | **$0.00 / mo**                |
+| **Total**          |                      |                                          |                                           | **$0.00 / mo**       | **~$9.10 / mo**               |
+
+> [!IMPORTANT]
+> **Free Tier Compliance Warnings**:
+>
+> 1. **Do not run more than ONE EC2 instance** concurrently under the same AWS account in this region; the 750 free hours cover exactly one `t3.micro` running 24/7.
+> 2. **Root Volume Ceiling**: The EBS volume size is locked to `20 GB gp3` to remain safely below the 30 GB AWS Free Tier threshold.
+> 3. **No ALB or NAT Gateways**: AWS Application Load Balancers cost ~$18-$22/month and NAT Gateways cost ~$32/month. Neither is covered by AWS Free Tier. CloudFront multi-origin routing directly terminates edge HTTPS and proxies backend traffic to EC2 port 80 at zero additional charge.
 
 ---
 
-## Prerequisites
+## One-Command Deployment
 
-1. [Terraform CLI >= 1.5.0](https://developer.hashicorp.com/terraform/install)
-2. [AWS CLI v2](https://aws.amazon.com/cli/) configured with valid deployment credentials:
-   ```bash
-   aws configure
-   ```
-3. Docker installed for container image compilation.
-
----
-
-## Deployment Steps
-
-### 1. Build and Push OCI Container Images to ECR
+The repository provides an end-to-end automated deployment script that initializes Terraform, applies infrastructure, compiles frontend bundles, uploads them to S3 with immutable/zero-cache headers, and invalidates CloudFront:
 
 ```bash
-# Authenticate Docker to AWS ECR
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+# Set AWS credentials and region
+export AWS_REGION=us-east-1
+export AWS_ACCESS_KEY_ID=<your-access-key>
+export AWS_SECRET_ACCESS_KEY=<your-secret-key>
 
-# Build and push Core API (Spring Boot)
-docker build -t <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/foliolive/core-api:latest -f services/core-api/Dockerfile services/core-api/
-docker push <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/foliolive/core-api:latest
-
-# Build and push BFF Gateway (Node.js)
-docker build -t <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/foliolive/bff:latest -f services/bff/Dockerfile .
-docker push <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/foliolive/bff:latest
+# Run one-command automated deployment
+./infra/aws/deploy.sh
 ```
 
-### 2. Initialize and Apply Terraform Infrastructure
+### Manual Step-by-Step Deployment
+
+If you prefer to inspect each stage manually:
+
+#### 1. Provision Infrastructure via Terraform
 
 ```bash
 cd infra/aws
-
-# Initialize providers
 terraform init
-
-# Plan infrastructure deployment
 terraform plan -out=tfplan
-
-# Apply resources
 terraform apply tfplan
 ```
 
-### 3. Deploy Frontend Bundles to S3 & Invalidate CloudFront
+#### 2. Build and Deploy Static Bundles
 
 ```bash
-# Build production client bundles
+cd ../..
+pnpm install --frozen-lockfile
 pnpm build
 
-# Retrieve S3 bucket name from Terraform outputs
-S3_BUCKET=$(terraform output -raw s3_bucket_name)
+S3_BUCKET=$(terraform -chdir=infra/aws output -raw s3_bucket_name)
+
+# Upload hashed assets (1-year immutable cache)
+aws s3 sync apps/shell/dist/assets "s3://${S3_BUCKET}/assets" \
+  --cache-control "public, max-age=31536000, immutable"
+
+# Upload SPA entrypoint (zero cache for instant updates)
+aws s3 cp apps/shell/dist/index.html "s3://${S3_BUCKET}/index.html" \
+  --cache-control "public, max-age=0, must-revalidate"
+
+# Upload micro-frontend remotes
+aws s3 sync apps/portfolio-mfe/dist "s3://${S3_BUCKET}/portfolio-mfe/"
+aws s3 sync apps/risk-mfe/dist "s3://${S3_BUCKET}/risk-mfe/"
+aws s3 sync apps/alerts-mfe/dist "s3://${S3_BUCKET}/alerts-mfe/"
+
+# Invalidate CloudFront distribution edge cache
 CF_DIST_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?DefaultCacheBehavior.TargetOriginId=='S3-${S3_BUCKET}'].Id" --output text)
-
-# Sync static build outputs to S3
-aws s3 sync apps/shell/dist s3://${S3_BUCKET}/ --delete
-aws s3 sync apps/portfolio-mfe/dist s3://${S3_BUCKET}/portfolio-mfe/
-aws s3 sync apps/risk-mfe/dist s3://${S3_BUCKET}/risk-mfe/
-aws s3 sync apps/alerts-mfe/dist s3://${S3_BUCKET}/alerts-mfe/
-
-# Invalidate CloudFront cache
-aws cloudfront create-invalidation --distribution-id ${CF_DIST_ID} --paths "/*"
+aws cloudfront create-invalidation --distribution-id "${CF_DIST_ID}" --paths "/*"
 ```
 
 ---
 
-## Verification
+## One-Command Teardown
 
-Upon completion of `terraform apply`, retrieve the live URLs:
+To cleanly destroy all provisioned infrastructure and guarantee **$0.00 lingering charges**:
 
 ```bash
-terraform output
+./infra/aws/teardown.sh
 ```
 
-- **Frontend CloudFront URL**: `https://<distribution-id>.cloudfront.net`
-- **Application Load Balancer**: `http://<alb-id>.us-east-1.elb.amazonaws.com`
-- **Health Check**: `curl http://<alb-id>.us-east-1.elb.amazonaws.com/health`
-- **Core API Swagger UI**: `http://<alb-id>.us-east-1.elb.amazonaws.com/swagger-ui/index.html`
+Or manually:
+
+```bash
+cd infra/aws
+terraform destroy -auto-approve
+```
+
+---
+
+## Public Demo Credentials
+
+The deployment configures public demo credentials displayed directly on the login screen (`/login`) with BFF rate limiting to protect the free-tier EC2 instance against abuse:
+
+| Role                       | Username      | Password       | Permissions                                                    |
+| :------------------------- | :------------ | :------------- | :------------------------------------------------------------- |
+| **Lead Portfolio Manager** | `pm_demo`     | `Password123!` | Read & Write (create/edit/delete risk limits, trade execution) |
+| **Risk Analyst / Viewer**  | `viewer_demo` | `Password123!` | Read-Only (view portfolios, risk analytics, live alerts feed)  |
+
+---
+
+## Live Endpoints
+
+Once deployed, retrieve the outputs via `terraform output`:
+
+- **Public Demo UI**: `https://<cloudfront-id>.cloudfront.net/login`
+- **Backend Health Check**: `https://<cloudfront-id>.cloudfront.net/health`
+- **Prometheus Metrics**: `https://<cloudfront-id>.cloudfront.net/metrics`
+- **Core API Spring Actuator**: `https://<cloudfront-id>.cloudfront.net/actuator/health`

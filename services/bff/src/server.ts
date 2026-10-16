@@ -19,6 +19,7 @@ import {
 import { MarketSimulator } from './simulator';
 import { RealtimeEngine } from './realtime-engine';
 import { WebSocketGateway } from './websocket';
+import rateLimit from 'express-rate-limit';
 import { createAuthRouter } from './routes/auth.routes';
 import { createApiRouter } from './routes/api.routes';
 
@@ -233,8 +234,35 @@ export function createBffServer(options?: {
     }
   };
 
-  app.post('/telemetry', handleTelemetry);
-  app.post('/api/telemetry', handleTelemetry);
+  // Rate limiting for public demo protection against DoS / resource exhaustion
+  const telemetryLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 180,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      success: false,
+      error: { code: 'TOO_MANY_REQUESTS', message: 'Telemetry rate limit exceeded.' },
+    },
+  });
+
+  const apiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      success: false,
+      error: {
+        code: 'TOO_MANY_REQUESTS',
+        message: 'Too many requests. Please slow down to preserve demo system capacity.',
+      },
+      timestamp: new Date().toISOString(),
+    },
+  });
+
+  app.post('/telemetry', telemetryLimiter, handleTelemetry);
+  app.post('/api/telemetry', telemetryLimiter, handleTelemetry);
 
   // Instantiate Simulator and Realtime Engine
   const simulator = new MarketSimulator(
@@ -250,7 +278,7 @@ export function createBffServer(options?: {
   app.use('/auth', createAuthRouter());
 
   // Mount Aggregation & Simulator API routes: /api/portfolio-overview, /api/market-overview, etc.
-  app.use('/api', createApiRouter(simulator, realtimeEngine));
+  app.use('/api', apiLimiter, createApiRouter(simulator, realtimeEngine));
 
   // 404 handler
   app.use((_req: Request, res: Response) => {
