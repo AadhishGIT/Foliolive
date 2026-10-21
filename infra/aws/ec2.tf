@@ -70,12 +70,12 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 
 # Free-Tier Single EC2 Instance
 resource "aws_instance" "backend" {
-  ami                  = data.aws_ami.ubuntu.id
-  instance_type        = var.instance_type
-  subnet_id            = aws_subnet.public.id
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.backend.id]
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
-  key_name             = var.ssh_key_name != "" ? var.ssh_key_name : null
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
+  key_name               = var.ssh_key_name != "" ? var.ssh_key_name : null
 
   # 20 GB gp3 volume is 100% within the 30 GB AWS Free Tier allowance
   root_block_device {
@@ -183,9 +183,9 @@ resource "aws_instance" "backend" {
                   container_name: foliolive-postgres
                   restart: always
                   environment:
-                    POSTGRES_DB: \${POSTGRES_DB}
-                    POSTGRES_USER: \${POSTGRES_USER}
-                    POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+                    POSTGRES_DB: $${POSTGRES_DB}
+                    POSTGRES_USER: $${POSTGRES_USER}
+                    POSTGRES_PASSWORD: $${POSTGRES_PASSWORD}
                   volumes:
                     - postgres-data:/var/lib/postgresql/data
                   deploy:
@@ -193,7 +193,7 @@ resource "aws_instance" "backend" {
                       limits:
                         memory: 128M
                   healthcheck:
-                    test: ["CMD-SHELL", "pg_isready -U \${POSTGRES_USER} -d \${POSTGRES_DB}"]
+                    test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
                     interval: 5s
                     timeout: 5s
                     retries: 5
@@ -205,10 +205,10 @@ resource "aws_instance" "backend" {
                   environment:
                     POSTGRES_HOST: postgres
                     POSTGRES_PORT: 5432
-                    POSTGRES_DB: \${POSTGRES_DB}
-                    POSTGRES_USER: \${POSTGRES_USER}
-                    POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
-                    JWT_SECRET: \${JWT_SECRET}
+                    POSTGRES_DB: $${POSTGRES_DB}
+                    POSTGRES_USER: $${POSTGRES_USER}
+                    POSTGRES_PASSWORD: $${POSTGRES_PASSWORD}
+                    JWT_SECRET: $${JWT_SECRET}
                     JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=45.0 -Xss256k"
                   deploy:
                     resources:
@@ -226,7 +226,7 @@ resource "aws_instance" "backend" {
                     PORT: 4000
                     BFF_PORT: 4000
                     CORE_API_URL: http://core-api:8080
-                    JWT_SECRET: \${JWT_SECRET}
+                    JWT_SECRET: $${JWT_SECRET}
                     NODE_ENV: production
                     SIMULATION_SEED: 42
                   deploy:
