@@ -136,6 +136,8 @@ jobs:
 
       - name: Execute Playwright E2E & Axe Accessibility Audits
         run: pnpm exec playwright test
+        env:
+          VITE_BASE: /
 
       - name: Upload Playwright Test Report Artifact
         if: always()
