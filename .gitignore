@@ -33,7 +33,10 @@ playwright-report/
 test-results/
 
 # Java / Maven / Gradle
-.mvn/
+.mvn/*
+!.mvn/wrapper/
+.mvn/wrapper/*.jar
+!.mvn/wrapper/maven-wrapper.properties
 *.class
 *.jar
 *.war
