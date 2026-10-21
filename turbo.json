@@ -3,7 +3,8 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "build/**"]
+      "outputs": ["dist/**", "build/**"],
+      "env": ["VITE_BASE", "VITE_PORTFOLIO_MFE_URL", "VITE_RISK_MFE_URL", "VITE_ALERTS_MFE_URL"]
     },
     "typecheck": {
       "dependsOn": ["^build"],
