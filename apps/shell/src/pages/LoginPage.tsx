@@ -37,13 +37,7 @@ export function LoginPage() {
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/portfolio';
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim() || !password) {
-      setErrorMessage('Please provide both username and password.');
-      return;
-    }
-
+  const executeAuth = async (uname: string, pass: string) => {
     setIsLoading(true);
     setErrorMessage(null);
 
@@ -57,7 +51,7 @@ export function LoginPage() {
       const response = await fetch(`${bffUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: uname, password: pass }),
       });
 
       if (response.ok) {
@@ -72,15 +66,22 @@ export function LoginPage() {
       if (response.status === 401) {
         setErrorMessage('Invalid username or password. Check credentials.');
       } else {
-        // Fallback for standalone/mock demonstration mode
-        fallbackLocalLogin(username, password);
+        fallbackLocalLogin(uname, pass);
       }
     } catch {
-      // If BFF server is offline during dev, use deterministic local credential fallback
-      fallbackLocalLogin(username, password);
+      fallbackLocalLogin(uname, pass);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim() || !password) {
+      setErrorMessage('Please provide both username and password.');
+      return;
+    }
+    await executeAuth(username, password);
   };
 
   const fallbackLocalLogin = (uname: string, pass: string) => {
@@ -111,35 +112,10 @@ export function LoginPage() {
     }
   };
 
-  const handleQuickDemo = (uname: string) => {
+  const handleQuickDemo = async (uname: string) => {
     setUsername(uname);
     setPassword('Password123!');
-    setErrorMessage(null);
-
-    // Immediate login
-    if (uname === 'pm_demo') {
-      const demoPm: User = {
-        id: 'usr_pm_01',
-        username: 'pm_demo',
-        email: 'pm_demo@foliolive.internal',
-        fullName: 'Lead Portfolio Manager',
-        role: 'ROLE_PM',
-        createdAt: '2026-01-01T00:00:00Z',
-      };
-      dispatch(setUser({ user: demoPm, token: 'dev_token_pm' }));
-      navigate(from, { replace: true });
-    } else {
-      const demoViewer: User = {
-        id: 'usr_viewer_01',
-        username: 'viewer_demo',
-        email: 'viewer_demo@foliolive.internal',
-        fullName: 'Risk Viewer Analyst',
-        role: 'ROLE_VIEWER',
-        createdAt: '2026-01-01T00:00:00Z',
-      };
-      dispatch(setUser({ user: demoViewer, token: 'dev_token_viewer' }));
-      navigate(from, { replace: true });
-    }
+    await executeAuth(uname, 'Password123!');
   };
 
   return (

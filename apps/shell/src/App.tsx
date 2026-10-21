@@ -27,7 +27,7 @@ export function App() {
   const [, startTransition] = useTransition();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !token) {
       return;
     }
 

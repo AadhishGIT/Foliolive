@@ -34,25 +34,15 @@ function loadInitialState(): AppState {
     }
   }
 
-  // Default to PM demo if not stored, so the app is immediately usable
-  const defaultUser: User = {
-    id: 'usr_pm_01',
-    username: 'pm_demo',
-    email: 'pm_demo@foliolive.internal',
-    fullName: 'Lead Portfolio Manager',
-    role: 'ROLE_PM',
-    createdAt: '2026-01-01T00:00:00Z',
-  };
-
-  const user = savedAuth?.user ?? defaultUser;
-  const token = savedAuth?.token ?? 'dev_token_pm';
+  const user = savedAuth?.user ?? null;
+  const token = savedAuth?.token ?? null;
 
   return {
     activePortfolioId: savedPortfolio,
     connectionStatus: 'DISCONNECTED',
     user,
     token,
-    isAuthenticated: Boolean(token),
+    isAuthenticated: Boolean(token && user),
     messagesReceived: 0,
   };
 }

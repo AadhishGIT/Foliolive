@@ -115,27 +115,29 @@ export function Header() {
           )}
 
           {/* Real-time Connection Indicator */}
-          <div
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs"
-            title={`WebSocket status: ${connectionStatus}`}
-          >
-            <Radio
-              className={`w-3.5 h-3.5 ${
-                connectionStatus === 'CONNECTED'
-                  ? 'text-emerald-500 dark:text-emerald-400 animate-pulse'
+          {isAuthenticated && (
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs"
+              title={`WebSocket status: ${connectionStatus}`}
+            >
+              <Radio
+                className={`w-3.5 h-3.5 ${
+                  connectionStatus === 'CONNECTED'
+                    ? 'text-emerald-500 dark:text-emerald-400 animate-pulse'
+                    : connectionStatus === 'CONNECTING' || connectionStatus === 'RECONNECTING'
+                      ? 'text-amber-500 dark:text-amber-400 animate-pulse'
+                      : 'text-slate-500 dark:text-slate-400'
+                }`}
+              />
+              <span className="font-mono text-[11px] font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline">
+                {connectionStatus === 'CONNECTED'
+                  ? 'LIVE FEED'
                   : connectionStatus === 'CONNECTING' || connectionStatus === 'RECONNECTING'
-                    ? 'text-amber-500 dark:text-amber-400 animate-pulse'
-                    : 'text-slate-500 dark:text-slate-400'
-              }`}
-            />
-            <span className="font-mono text-[11px] font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline">
-              {connectionStatus === 'CONNECTED'
-                ? 'LIVE FEED'
-                : connectionStatus === 'CONNECTING' || connectionStatus === 'RECONNECTING'
-                  ? 'CONNECTING'
-                  : 'OFFLINE'}
-            </span>
-          </div>
+                    ? 'CONNECTING'
+                    : 'OFFLINE'}
+              </span>
+            </div>
+          )}
 
           {/* Theme Switcher */}
           <ThemeToggle />

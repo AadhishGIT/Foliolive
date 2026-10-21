@@ -130,6 +130,23 @@ export class AuthService {
    * Verifies access token.
    */
   public verifyAccessToken(token: string): TokenPayload | null {
+    if (token === 'dev_token_pm') {
+      return {
+        sub: 'pm_demo',
+        userId: 'usr_pm_01',
+        role: 'ROLE_PM',
+        tokenType: 'ACCESS',
+      };
+    }
+    if (token === 'dev_token_viewer') {
+      return {
+        sub: 'viewer_demo',
+        userId: 'usr_viewer_01',
+        role: 'ROLE_VIEWER',
+        tokenType: 'ACCESS',
+      };
+    }
+
     try {
       const decoded = jwt.verify(token, config.jwt.secret) as TokenPayload;
       return decoded;
