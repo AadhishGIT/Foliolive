@@ -15,28 +15,32 @@ const DEFAULT_BFF_URL =
   typeof window !== 'undefined' && window.location.port === '3100' ? 'http://localhost:4000' : '';
 
 let telemetryEndpoint = `${DEFAULT_BFF_URL}/telemetry`;
+const TELEMETRY_FLUSH_INTERVAL_MS = 5000;
+let telemetryQueue: TelemetryPayload[] = [];
+let telemetryFlushTimer: ReturnType<typeof setTimeout> | undefined;
 
-/**
- * Sends a telemetry payload to the BFF /telemetry endpoint.
- * Uses navigator.sendBeacon when possible with fallback to fetch.
- */
-export function sendTelemetryMetric(payload: TelemetryPayload): void {
-  const enriched: TelemetryPayload = {
-    ...payload,
-    correlationId: payload.correlationId || getSessionCorrelationId(),
-    page: payload.page || (typeof window !== 'undefined' ? window.location.pathname : '/'),
-    timestamp: payload.timestamp || new Date().toISOString(),
-  };
-
-  const body = JSON.stringify(enriched);
-
-  if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
-    const blob = new Blob([body], { type: 'application/json' });
-    const success = navigator.sendBeacon(telemetryEndpoint, blob);
-    if (success) return;
+function flushTelemetryQueue(useBeacon = false): void {
+  if (telemetryFlushTimer !== undefined) {
+    clearTimeout(telemetryFlushTimer);
+    telemetryFlushTimer = undefined;
   }
 
-  // Fallback to fetch with keepalive: true
+  if (telemetryQueue.length === 0) return;
+
+  const batch = telemetryQueue;
+  telemetryQueue = [];
+  const body = JSON.stringify(batch);
+
+  if (useBeacon && typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+    try {
+      if (navigator.sendBeacon(telemetryEndpoint, new Blob([body], { type: 'application/json' }))) {
+        return;
+      }
+    } catch {
+      // Fall back to fetch when the browser cannot queue the beacon.
+    }
+  }
+
   if (typeof fetch !== 'undefined') {
     fetch(telemetryEndpoint, {
       method: 'POST',
@@ -47,8 +51,26 @@ export function sendTelemetryMetric(payload: TelemetryPayload): void {
       body,
       keepalive: true,
     }).catch(() => {
-      // Best-effort telemetry: silent fail on network drop
+      // Best-effort telemetry: do not retry failed batches.
     });
+  }
+}
+
+/**
+ * Sends a telemetry payload to the BFF /telemetry endpoint.
+ * Queues metrics to avoid sending a request for every render/update.
+ */
+export function sendTelemetryMetric(payload: TelemetryPayload): void {
+  const enriched: TelemetryPayload = {
+    ...payload,
+    correlationId: payload.correlationId || getSessionCorrelationId(),
+    page: payload.page || (typeof window !== 'undefined' ? window.location.pathname : '/'),
+    timestamp: payload.timestamp || new Date().toISOString(),
+  };
+
+  telemetryQueue.push(enriched);
+  if (telemetryFlushTimer === undefined) {
+    telemetryFlushTimer = setTimeout(() => flushTelemetryQueue(), TELEMETRY_FLUSH_INTERVAL_MS);
   }
 }
 
@@ -78,6 +100,8 @@ export function initWebVitals(bffBaseUrl?: string): void {
   if (bffBaseUrl) {
     telemetryEndpoint = `${bffBaseUrl}/telemetry`;
   }
+
+  window.addEventListener('pagehide', () => flushTelemetryQueue(true));
 
   const handleMetric = (metric: Metric) => {
     sendTelemetryMetric({
