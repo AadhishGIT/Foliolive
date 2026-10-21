@@ -70,12 +70,12 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 
 # Free-Tier Single EC2 Instance
 resource "aws_instance" "backend" {
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = var.instance_type
-  subnet_id              = aws_subnet.public.id
+  ami                  = data.aws_ami.ubuntu.id
+  instance_type        = var.instance_type
+  subnet_id            = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.backend.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
-  key_name               = var.ssh_key_name != "" ? var.ssh_key_name : null
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+  key_name             = var.ssh_key_name != "" ? var.ssh_key_name : null
 
   # 20 GB gp3 volume is 100% within the 30 GB AWS Free Tier allowance
   root_block_device {
