@@ -125,6 +125,11 @@ jobs:
 
       - name: Build All Workspaces
         run: pnpm build
+        env:
+          VITE_BASE: /
+          VITE_PORTFOLIO_MFE_URL: http://localhost:3001
+          VITE_RISK_MFE_URL: http://localhost:3002
+          VITE_ALERTS_MFE_URL: http://localhost:3003
 
       - name: Install Playwright Chromium & System Dependencies
         run: pnpm exec playwright install --with-deps chromium
