@@ -23,6 +23,8 @@ module.exports = {
     '.turbo/',
     'coverage/',
     'storybook-static/',
+    '@mf-types/',
+    '**/@mf-types/**',
     '*.config.js',
     '*.preset.js',
   ],

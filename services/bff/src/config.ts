@@ -2,7 +2,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
-  port: parseInt(process.env.BFF_PORT || process.env.PORT || '4000', 10),
+  port: parseInt(
+    process.env.PORT ||
+      process.env.BFF_PORT ||
+      (process.env.NODE_ENV === 'production' ? '3000' : '4000'),
+    10
+  ),
   host: process.env.BFF_HOST || '0.0.0.0',
   nodeEnv: process.env.NODE_ENV || 'development',
   isDev: process.env.NODE_ENV !== 'production',

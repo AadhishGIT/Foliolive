@@ -42,7 +42,11 @@ export function App() {
       }
     };
 
-    const wsUrl = import.meta.env.VITE_BFF_WS_URL || 'ws://localhost:4000/ws';
+    const defaultWsUrl =
+      typeof window !== 'undefined' && window.location.port !== '3100'
+        ? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`
+        : 'ws://localhost:4000/ws';
+    const wsUrl = import.meta.env.VITE_BFF_WS_URL || defaultWsUrl;
     const client = new RealtimeClient({
       url: wsUrl,
       token: token || undefined,

@@ -9,6 +9,7 @@ target/
 .turbo/
 out/
 storybook-static/
+@mf-types/
 *.tsbuildinfo
 
 # Environment files (never commit real secrets)

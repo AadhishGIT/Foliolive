@@ -1,5 +1,7 @@
 import crypto from 'node:crypto';
 import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -119,7 +121,16 @@ export function createBffServer(options?: {
   // Security headers with Helmet
   app.use(
     helmet({
-      contentSecurityPolicy: config.isDev ? false : undefined,
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+          connectSrc: ["'self'", 'ws:', 'wss:', 'http:', 'https:'],
+          imgSrc: ["'self'", 'data:', 'blob:'],
+        },
+      },
       crossOriginEmbedderPolicy: false,
     })
   );
@@ -279,6 +290,59 @@ export function createBffServer(options?: {
 
   // Mount Aggregation & Simulator API routes: /api/portfolio-overview, /api/market-overview, etc.
   app.use('/api', apiLimiter, createApiRouter(simulator, realtimeEngine));
+
+  // =========================================================================
+  // Unified Production Gateway: Single-Link Static Serving & SPA Routing
+  // Serves Shell Host + all Micro-Frontends under the exact same origin link
+  // =========================================================================
+  const candidateShellPaths = [
+    path.resolve(process.cwd(), 'apps/shell/dist'),
+    path.resolve(__dirname, '../../apps/shell/dist'),
+    path.resolve(__dirname, '../../../apps/shell/dist'),
+  ];
+  const shellDist = candidateShellPaths.find((p) => fs.existsSync(p));
+
+  if (shellDist) {
+    const rootApps = path.resolve(shellDist, '..', '..');
+    const portfolioDist = path.join(rootApps, 'portfolio-mfe', 'dist');
+    const riskDist = path.join(rootApps, 'risk-mfe', 'dist');
+    const alertsDist = path.join(rootApps, 'alerts-mfe', 'dist');
+
+    // 1. Mount Micro-Frontends at dedicated subpaths
+    if (fs.existsSync(portfolioDist)) {
+      app.use('/portfolio-mfe', express.static(portfolioDist, { maxAge: '1h' }));
+    }
+    if (fs.existsSync(riskDist)) {
+      app.use('/risk-mfe', express.static(riskDist, { maxAge: '1h' }));
+    }
+    if (fs.existsSync(alertsDist)) {
+      app.use('/alerts-mfe', express.static(alertsDist, { maxAge: '1h' }));
+    }
+
+    // 2. Mount Shell static assets (JS, CSS, SVGs, favicon, etc.)
+    app.use(express.static(shellDist, { maxAge: '1h' }));
+
+    // 3. SPA Client-Side Routing Fallback (serves index.html for non-API GETs)
+    app.get('*', (req: Request, res: Response, next) => {
+      if (
+        req.path.startsWith('/api') ||
+        req.path.startsWith('/auth') ||
+        req.path.startsWith('/telemetry') ||
+        req.path.startsWith('/metrics') ||
+        req.path.startsWith('/health') ||
+        req.path.startsWith('/ws') ||
+        req.path.startsWith('/actuator')
+      ) {
+        return next();
+      }
+      res.sendFile(path.join(shellDist, 'index.html'));
+    });
+
+    logger.info(
+      { shellDist, portfolioDist, riskDist, alertsDist },
+      'Production unified single-link gateway active: Shell and MFEs mounted'
+    );
+  }
 
   // 404 handler
   app.use((_req: Request, res: Response) => {

@@ -12,9 +12,7 @@ export interface TelemetryPayload {
 }
 
 const DEFAULT_BFF_URL =
-  typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:4000'
-    : '';
+  typeof window !== 'undefined' && window.location.port === '3100' ? 'http://localhost:4000' : '';
 
 let telemetryEndpoint = `${DEFAULT_BFF_URL}/telemetry`;
 

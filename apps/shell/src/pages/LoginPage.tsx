@@ -47,7 +47,11 @@ export function LoginPage() {
     setIsLoading(true);
     setErrorMessage(null);
 
-    const bffUrl = import.meta.env.VITE_BFF_HTTP_URL || 'http://localhost:4000';
+    const defaultBffUrl =
+      typeof window !== 'undefined' && window.location.port !== '3100'
+        ? ''
+        : 'http://localhost:4000';
+    const bffUrl = import.meta.env.VITE_BFF_HTTP_URL || defaultBffUrl;
 
     try {
       const response = await fetch(`${bffUrl}/auth/login`, {
