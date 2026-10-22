@@ -12,12 +12,17 @@ echo "======================================================================"
 echo "⚠️  Starting Foliolive AWS Free-Tier Automated Teardown"
 echo "======================================================================"
 
-if ! command -v terraform &> /dev/null; then
-  echo "❌ Error: Terraform CLI is not installed or not in PATH."
-  exit 1
-fi
+for tool in terraform aws; do
+  if ! command -v "$tool" &> /dev/null; then
+    echo "❌ Error: Required command '$tool' is not installed or not in PATH."
+    exit 1
+  fi
+done
 
 cd "${SCRIPT_DIR}"
+
+# Initialize and adopt the shared remote state before reading outputs or destroying resources.
+bash ./bootstrap-state.sh
 
 # 1. Empty S3 Bucket if it exists
 if command -v aws &> /dev/null; then
@@ -30,11 +35,11 @@ fi
 
 # 2. Destroy all resources via Terraform
 echo "💥 Destroying all AWS resources via Terraform..."
-terraform destroy -auto-approve
+terraform destroy -auto-approve -input=false -lock-timeout=5m
 
 echo "======================================================================"
 echo "✅ Foliolive AWS Teardown Complete."
 echo "   All EC2 instances, EBS volumes, S3 buckets, SSM parameters, and"
 echo "   CloudFront distributions have been successfully destroyed."
-echo "   Zero recurring charges remain."
+echo "   The Terraform state bucket and lock table are retained for future deployments."
 echo "======================================================================"
