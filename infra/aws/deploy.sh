@@ -24,7 +24,14 @@ done
 # 2. Terraform Init & Apply
 echo "📦 [1/4] Provisioning AWS Infrastructure with Terraform..."
 cd "${SCRIPT_DIR}"
-terraform init -upgrade
+TF_STATE_BUCKET=$(bash "${SCRIPT_DIR}/prepare-state.sh")
+AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}"
+terraform init -upgrade \
+  -backend-config="bucket=${TF_STATE_BUCKET}" \
+  -backend-config="key=production/terraform.tfstate" \
+  -backend-config="region=${AWS_REGION}" \
+  -backend-config="encrypt=true" \
+  -backend-config="dynamodb_table=foliolive-terraform-locks"
 terraform apply -auto-approve
 
 # 3. Retrieve Outputs

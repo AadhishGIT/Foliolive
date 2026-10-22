@@ -92,7 +92,13 @@ If you prefer to inspect each stage manually:
 
 ```bash
 cd infra/aws
-terraform init
+TF_STATE_BUCKET=$(bash ./prepare-state.sh)
+terraform init \
+  -backend-config="bucket=${TF_STATE_BUCKET}" \
+  -backend-config="key=production/terraform.tfstate" \
+  -backend-config="region=${AWS_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}" \
+  -backend-config="encrypt=true" \
+  -backend-config="dynamodb_table=foliolive-terraform-locks"
 terraform plan -out=tfplan
 terraform apply tfplan
 ```
