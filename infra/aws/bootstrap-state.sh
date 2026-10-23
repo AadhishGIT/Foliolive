@@ -71,18 +71,17 @@ if [ -n "${VPC_ID}" ] && [ "${VPC_ID}" != "None" ]; then
   import_if_found aws_internet_gateway.gw "$(aws ec2 describe-internet-gateways \
     --filters "Name=attachment.vpc-id,Values=${VPC_ID}" "Name=tag:Name,Values=${PROJECT}-igw" \
     --query 'InternetGateways[0].InternetGatewayId' --output text)"
-  import_if_found aws_subnet.public "$(aws ec2 describe-subnets \
+  SUBNET_ID="$(aws ec2 describe-subnets \
     --filters "Name=vpc-id,Values=${VPC_ID}" "Name=tag:Name,Values=${PROJECT}-public-subnet" \
     --query 'Subnets[0].SubnetId' --output text)"
+  import_if_found aws_subnet.public "${SUBNET_ID}"
   ROUTE_TABLE_ID="$(aws ec2 describe-route-tables \
     --filters "Name=vpc-id,Values=${VPC_ID}" "Name=tag:Name,Values=${PROJECT}-public-rt" \
     --query 'RouteTables[0].RouteTableId' --output text)"
   import_if_found aws_route_table.public "${ROUTE_TABLE_ID}"
-  if [ -n "${ROUTE_TABLE_ID}" ] && [ "${ROUTE_TABLE_ID}" != "None" ]; then
-    import_if_found aws_route_table_association.public "$(aws ec2 describe-route-tables \
-      --route-table-ids "${ROUTE_TABLE_ID}" \
-      --query "RouteTables[0].Associations[?Main==\`false\`].RouteTableAssociationId | [0]" \
-      --output text)"
+  if [ -n "${SUBNET_ID}" ] && [ "${SUBNET_ID}" != "None" ] &&
+    [ -n "${ROUTE_TABLE_ID}" ] && [ "${ROUTE_TABLE_ID}" != "None" ]; then
+    import_if_found aws_route_table_association.public "${SUBNET_ID}/${ROUTE_TABLE_ID}"
   fi
   import_if_found aws_security_group.backend "$(aws ec2 describe-security-groups \
     --filters "Name=vpc-id,Values=${VPC_ID}" "Name=group-name,Values=${PROJECT}-backend-sg" \
