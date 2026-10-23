@@ -56,7 +56,9 @@ import_if_found() {
   if [ -z "${id}" ] || [ "${id}" = "None" ]; then
     return
   fi
-  if ! terraform -chdir="${SCRIPT_DIR}" state list | grep -Fxq "${address}"; then
+  local state
+  state="$(terraform -chdir="${SCRIPT_DIR}" state list)"
+  if ! grep -Fxq "${address}" <<< "${state}"; then
     terraform -chdir="${SCRIPT_DIR}" import -input=false "${address}" "${id}"
   fi
 }
