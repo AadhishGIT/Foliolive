@@ -261,11 +261,19 @@ export function VirtualizedGrid({
     }
   }, [selectedRowIndex, sortedHoldings.length, rowVirtualizer]);
 
-  // Telemetry: measure virtual grid render and DOM commit duration
+  // Telemetry: measure virtual grid render and DOM commit duration (throttled to at most once per 15s)
   const renderStartRef = useRef(performance.now());
   renderStartRef.current = performance.now();
+  const lastTelemetryDispatchRef = useRef(0);
 
   useEffect(() => {
+    const now = performance.now();
+    // Sample grid render telemetry at most once every 15 seconds to prevent event flooding on continuous market ticks
+    if (now - lastTelemetryDispatchRef.current < 15000) {
+      return;
+    }
+    lastTelemetryDispatchRef.current = now;
+
     const durationMs = performance.now() - renderStartRef.current;
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
