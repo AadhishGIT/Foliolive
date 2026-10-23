@@ -24,8 +24,8 @@ done
 # 2. Terraform Init & Apply
 echo "📦 [1/4] Provisioning AWS Infrastructure with Terraform..."
 cd "${SCRIPT_DIR}"
-terraform init -upgrade
-terraform apply -auto-approve
+bash ./bootstrap-state.sh
+terraform apply -auto-approve -input=false -lock-timeout=5m
 
 # 3. Retrieve Outputs
 S3_BUCKET=$(terraform output -raw s3_bucket_name)

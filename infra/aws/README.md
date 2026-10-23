@@ -67,6 +67,7 @@ See **[ADR-0012: AWS Free Tier Single EC2 Docker Compose vs ECS/ALB](../../docs/
 > 1. **Do not run more than ONE EC2 instance** concurrently under the same AWS account in this region; the 750 free hours cover exactly one `t3.micro` running 24/7.
 > 2. **Root Volume Ceiling**: The EBS volume size is locked to `20 GB gp3` to remain safely below the 30 GB AWS Free Tier threshold.
 > 3. **No ALB or NAT Gateways**: AWS Application Load Balancers cost ~$18-$22/month and NAT Gateways cost ~$32/month. Neither is covered by AWS Free Tier. CloudFront multi-origin routing directly terminates edge HTTPS and proxies backend traffic to EC2 port 80 at zero additional charge.
+> 4. **Terraform State Backend**: The encrypted, versioned S3 state bucket and on-demand DynamoDB lock table are retained after teardown and may incur small storage/request charges.
 
 ---
 
@@ -88,11 +89,13 @@ export AWS_SECRET_ACCESS_KEY=<your-secret-key>
 
 If you prefer to inspect each stage manually:
 
-#### 1. Provision Infrastructure via Terraform
+#### 1. Initialize State and Provision Infrastructure
+
+Terraform state is stored in an encrypted, versioned S3 bucket with a DynamoDB lock table. The bootstrap script creates these resources if needed and imports any existing Foliolive infrastructure into the shared state.
 
 ```bash
 cd infra/aws
-terraform init
+bash ./bootstrap-state.sh
 terraform plan -out=tfplan
 terraform apply tfplan
 ```
@@ -128,7 +131,7 @@ aws cloudfront create-invalidation --distribution-id "${CF_DIST_ID}" --paths "/*
 
 ## One-Command Teardown
 
-To cleanly destroy all provisioned infrastructure and guarantee **$0.00 lingering charges**:
+To destroy the application infrastructure:
 
 ```bash
 ./infra/aws/teardown.sh
@@ -138,8 +141,11 @@ Or manually:
 
 ```bash
 cd infra/aws
+bash ./bootstrap-state.sh
 terraform destroy -auto-approve
 ```
+
+The remote Terraform state bucket and DynamoDB lock table are retained so future deployments can safely reuse state.
 
 ---
 
