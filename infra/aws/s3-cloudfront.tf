@@ -3,12 +3,12 @@
 # and reverse proxies dynamic API and WebSocket connections to the free-tier EC2 Docker Compose instance.
 
 resource "random_id" "bucket_suffix" {
-  byte_length = 4
+  byte_length = 6
 }
 
 # 1. S3 Bucket for Static Frontend Bundles
 resource "aws_s3_bucket" "frontend" {
-  bucket        = "${var.project_name}-frontend-${random_id.bucket_suffix.hex}"
+  bucket        = "${var.project_name}-frontend-${random_id.bucket_suffix.b64_url}"
   force_destroy = true
 
   tags = {
