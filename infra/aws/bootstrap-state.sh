@@ -111,6 +111,9 @@ import_if_found aws_iam_instance_profile.ec2_profile "$(aws iam get-instance-pro
 import_if_found aws_instance.backend "$(aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=${PROJECT}-backend-ec2" "Name=instance-state-name,Values=pending,running,stopping,stopped" \
   --query 'Reservations[0].Instances[0].InstanceId' --output text)"
+import_if_found aws_eip.backend "$(aws ec2 describe-addresses \
+  --filters "Name=tag:Name,Values=${PROJECT}-backend-eip" \
+  --query 'Addresses[0].AllocationId' --output text 2>/dev/null || true)"
 
 for parameter in jwt_secret postgres_password postgres_user postgres_db; do
   import_if_found "aws_ssm_parameter.${parameter}" \

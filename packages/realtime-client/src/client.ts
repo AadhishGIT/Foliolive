@@ -55,9 +55,9 @@ export class RealtimeClient {
     this.url = options.url;
     this.token = options.token;
     this.heartbeatIntervalMs = options.heartbeatIntervalMs ?? 15000;
-    this.initialReconnectDelayMs = options.initialReconnectDelayMs ?? 1000;
-    this.maxReconnectDelayMs = options.maxReconnectDelayMs ?? 30000;
-    this.maxReconnectAttempts = options.maxReconnectAttempts ?? 10;
+    this.initialReconnectDelayMs = options.initialReconnectDelayMs ?? 2500;
+    this.maxReconnectDelayMs = options.maxReconnectDelayMs ?? 15000;
+    this.maxReconnectAttempts = options.maxReconnectAttempts ?? 3;
   }
 
   public getStatus(): ConnectionStatus {

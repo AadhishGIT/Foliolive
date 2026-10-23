@@ -73,9 +73,10 @@ resource "aws_instance" "backend" {
   ami                  = data.aws_ami.ubuntu.id
   instance_type        = var.instance_type
   subnet_id            = aws_subnet.public.id
-  vpc_security_group_ids = [aws_security_group.backend.id]
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
-  key_name             = var.ssh_key_name != "" ? var.ssh_key_name : null
+  vpc_security_group_ids      = [aws_security_group.backend.id]
+  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
+  key_name                    = var.ssh_key_name != "" ? var.ssh_key_name : null
+  user_data_replace_on_change = true
 
   # 20 GB gp3 volume is 100% within the 30 GB AWS Free Tier allowance
   root_block_device {
@@ -199,7 +200,7 @@ resource "aws_instance" "backend" {
                     retries: 5
 
                 core-api:
-                  image: ghcr.io/${var.project_name}/core-api:latest
+                  image: ghcr.io/${var.container_image_namespace}/core-api:latest
                   container_name: foliolive-core-api
                   restart: always
                   environment:
@@ -219,7 +220,7 @@ resource "aws_instance" "backend" {
                       condition: service_healthy
 
                 bff:
-                  image: ghcr.io/${var.project_name}/bff:latest
+                  image: ghcr.io/${var.container_image_namespace}/bff:latest
                   container_name: foliolive-bff
                   restart: always
                   environment:
@@ -251,9 +252,6 @@ resource "aws_instance" "backend" {
                     resources:
                       limits:
                         memory: 64M
-                  depends_on:
-                    - bff
-                    - core-api
 
               volumes:
                 postgres-data:
@@ -287,5 +285,15 @@ resource "aws_instance" "backend" {
 
   tags = {
     Name = "${var.project_name}-backend-ec2"
+  }
+}
+
+# Stable Elastic IP for EC2 backend to prevent IP/DNS rotation across restarts
+resource "aws_eip" "backend" {
+  instance = aws_instance.backend.id
+  domain   = "vpc"
+
+  tags = {
+    Name = "${var.project_name}-backend-eip"
   }
 }

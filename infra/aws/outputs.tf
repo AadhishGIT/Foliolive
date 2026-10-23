@@ -22,12 +22,12 @@ output "ec2_instance_id" {
 
 output "ec2_public_ip" {
   description = "Public IP address of the EC2 backend instance"
-  value       = aws_instance.backend.public_ip
+  value       = aws_eip.backend.public_ip
 }
 
 output "ec2_public_dns" {
   description = "Public DNS hostname of the EC2 backend instance"
-  value       = aws_instance.backend.public_dns
+  value       = aws_eip.backend.public_dns
 }
 
 output "backend_health_url" {

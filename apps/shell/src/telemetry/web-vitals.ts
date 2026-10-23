@@ -80,7 +80,13 @@ async function flushTelemetryQueue(useBeacon = false): Promise<void> {
       if (timeoutId) clearTimeout(timeoutId);
 
       if (!res.ok) {
-        // Status 504 Gateway Timeout, 502, 500, etc.
+        // If the origin gateway returns 504/502/503/404, the backend is not hosting telemetry.
+        // Disable telemetry for this entire session to avoid recurring console errors.
+        if (res.status === 504 || res.status === 502 || res.status === 503 || res.status === 404) {
+          circuitBreakerUntil = Number.MAX_SAFE_INTEGER;
+          telemetryQueue = [];
+          return;
+        }
         handleFailure();
       } else {
         consecutiveFailures = 0;
@@ -88,8 +94,9 @@ async function flushTelemetryQueue(useBeacon = false): Promise<void> {
       }
     } catch {
       if (timeoutId) clearTimeout(timeoutId);
-      // Network error, abort timeout, or gateway failure
-      handleFailure();
+      // Network error, abort timeout, or gateway failure: disable telemetry for session
+      circuitBreakerUntil = Number.MAX_SAFE_INTEGER;
+      telemetryQueue = [];
     } finally {
       isFlushing = false;
     }

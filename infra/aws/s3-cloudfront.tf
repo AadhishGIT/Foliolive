@@ -81,7 +81,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   # Origin 2: Backend EC2 Instance (Docker Compose + Caddy Reverse Proxy)
   origin {
-    domain_name = aws_instance.backend.public_dns
+    domain_name = aws_eip.backend.public_dns
     origin_id   = "EC2-Backend"
 
     custom_origin_config {

@@ -50,14 +50,14 @@ export function App() {
     const client = new RealtimeClient({
       url: wsUrl,
       token: token || undefined,
+      maxReconnectAttempts: 3,
+      initialReconnectDelayMs: 2500,
+      maxReconnectDelayMs: 15000,
     });
 
     const bus = getGlobalMfeBus();
 
     const unsubStatus = client.onStatusChange((status) => {
-      if (status === 'RECONNECTING') {
-        recordCustomMetric('wsReconnectCount', 1, 'count');
-      }
       startTransition(() => {
         dispatch(setConnectionStatus(status));
       });

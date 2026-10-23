@@ -18,6 +18,12 @@ variable "project_name" {
   default     = "foliolive"
 }
 
+variable "container_image_namespace" {
+  description = "Docker image repository namespace on GHCR (e.g. aadhishgit/foliolive)"
+  type        = string
+  default     = "aadhishgit/foliolive"
+}
+
 variable "instance_type" {
   description = "Free-tier eligible EC2 instance type (750 hours/month free on AWS Free Tier)"
   type        = string
