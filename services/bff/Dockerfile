@@ -12,4 +12,4 @@ RUN pnpm install --frozen-lockfile || pnpm install
 WORKDIR /app/services/bff
 EXPOSE 4000
 
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "start"]

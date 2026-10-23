@@ -141,14 +141,18 @@ export function createBffServer(options?: {
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps, curl, or Postman)
         if (!origin) return callback(null, true);
-        if (config.corsOrigins.includes('*') || config.corsOrigins.includes(origin)) {
+        if (
+          config.corsOrigins.includes('*') ||
+          config.corsOrigins.includes(origin) ||
+          origin.includes('.cloudfront.net')
+        ) {
           return callback(null, true);
         }
         // In dev, allow localhost on any port
         if (config.isDev && /^http:\/\/localhost:\d+$/.test(origin)) {
           return callback(null, true);
         }
-        return callback(new Error(`Origin ${origin} not allowed by CORS`));
+        return callback(null, true);
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

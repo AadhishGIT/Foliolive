@@ -17,7 +17,21 @@ const DEFAULT_BFF_URL =
 let telemetryEndpoint = `${DEFAULT_BFF_URL}/telemetry`;
 const TELEMETRY_FLUSH_INTERVAL_MS = 10000;
 const MAX_QUEUE_SIZE = 50;
-const REQUEST_TIMEOUT_MS = 4000; // 4s timeout prevents hanging on CloudFront 60s gateway timeouts
+const REQUEST_TIMEOUT_MS = 4000;
+const isLocalhost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+let isTelemetryReady = isLocalhost;
+
+export function enableTelemetry(): void {
+  isTelemetryReady = true;
+  if (telemetryQueue.length > 0 && telemetryFlushTimer === undefined) {
+    telemetryFlushTimer = setTimeout(() => {
+      void flushTelemetryQueue();
+    }, 1000);
+  }
+}
 
 let telemetryQueue: TelemetryPayload[] = [];
 let telemetryFlushTimer: ReturnType<typeof setTimeout> | undefined;
@@ -39,8 +53,8 @@ async function flushTelemetryQueue(useBeacon = false): Promise<void> {
     telemetryFlushTimer = undefined;
   }
 
-  // Do not attempt network requests while circuit breaker is active or a flush is already in flight
-  if (Date.now() < circuitBreakerUntil || isFlushing) {
+  // Do not attempt network requests until backend is verified healthy, or if circuit breaker is active
+  if (!isTelemetryReady || Date.now() < circuitBreakerUntil || isFlushing) {
     return;
   }
 

@@ -234,8 +234,6 @@ resource "aws_instance" "backend" {
                     resources:
                       limits:
                         memory: 192M
-                  depends_on:
-                    - core-api
 
                 caddy:
                   image: caddy:2-alpine

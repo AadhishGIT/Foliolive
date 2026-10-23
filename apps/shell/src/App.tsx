@@ -9,7 +9,7 @@ import { setConnectionStatus, incrementMessageCount, type RootState } from './st
 import { RealtimeClient } from '@foliolive/realtime-client';
 import { getGlobalMfeBus } from '@foliolive/shared-types';
 import { ThemeProvider, SkipLink } from '@foliolive/ui';
-import { recordCustomMetric } from './telemetry/web-vitals';
+import { recordCustomMetric, enableTelemetry } from './telemetry/web-vitals';
 
 // Remote micro-frontend components via Module Federation
 // @ts-expect-error - Module Federation dynamic import
@@ -91,10 +91,50 @@ export function App() {
       bus.publish('ALERT_CLEARED', cleared);
     });
 
-    client.connect();
-    client.subscribePortfolio(activePortfolioId);
+    let isCancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const probeAndConnect = async () => {
+      const isRemote =
+        typeof window !== 'undefined' &&
+        !window.location.hostname.includes('localhost') &&
+        !window.location.hostname.includes('127.0.0.1');
+
+      if (isRemote) {
+        try {
+          const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          const tId = controller ? setTimeout(() => controller.abort(), 2500) : null;
+          const res = await fetch('/health', {
+            signal: controller ? controller.signal : undefined,
+          });
+          if (tId) clearTimeout(tId);
+          if (!res.ok) throw new Error('Health probe non-200');
+        } catch {
+          if (!isCancelled) {
+            // Backend offline or starting: set status to DISCONNECTED for local simulated mode
+            startTransition(() => {
+              dispatch(setConnectionStatus('DISCONNECTED'));
+            });
+            bus.setState({ connectionStatus: 'DISCONNECTED' });
+            // Retry silent probe in 20s
+            retryTimer = setTimeout(() => void probeAndConnect(), 20000);
+            return;
+          }
+        }
+      }
+
+      if (!isCancelled) {
+        enableTelemetry();
+        client.connect();
+        client.subscribePortfolio(activePortfolioId);
+      }
+    };
+
+    void probeAndConnect();
 
     return () => {
+      isCancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
       unsubStatus();
       unsubBatch();
       unsubLive();
