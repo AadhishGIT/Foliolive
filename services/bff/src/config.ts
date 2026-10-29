@@ -53,4 +53,12 @@ export const config = {
     heartbeatIntervalMs: 30000,
     maxBackpressureBytes: 1024 * 1024, // 1 MB
   },
+
+  // Live Market Data Service
+  liveMarket: {
+    enabled: process.env.LIVE_MARKET_ENABLED !== 'false',
+    provider: (process.env.LIVE_MARKET_PROVIDER || 'yahoo') as 'yahoo' | 'finnhub',
+    finnhubApiKey: process.env.FINNHUB_API_KEY || '',
+    pollIntervalMs: parseInt(process.env.LIVE_MARKET_POLL_INTERVAL_MS || '15000', 10), // 15s poll interval
+  },
 };

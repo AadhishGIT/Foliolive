@@ -2,11 +2,13 @@ import { Router, type Request, type Response } from 'express';
 import { SimulatorControlSchema } from '@foliolive/shared-types';
 import type { MarketSimulator, Sector } from '../simulator';
 import type { RealtimeEngine } from '../realtime-engine';
+import type { LiveMarketService } from '../live-market-service';
 import { logger } from '../logger';
 
 export function createApiRouter(
   simulator: MarketSimulator,
-  realtimeEngine: RealtimeEngine
+  realtimeEngine: RealtimeEngine,
+  liveMarketService?: LiveMarketService
 ): Router {
   const router = Router();
 
@@ -199,6 +201,43 @@ export function createApiRouter(
       success: true,
       message: actionSummary.trim() || 'No changes made',
       data: simulator.getStatus(),
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  /**
+   * GET /api/market/live-status
+   * Returns current status of the live financial market data feed.
+   */
+  router.get('/market/live-status', (_req: Request, res: Response) => {
+    res.json({
+      success: true,
+      data: liveMarketService
+        ? liveMarketService.getStatus()
+        : { enabled: false, message: 'Live market service not attached' },
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  /**
+   * POST /api/market/live-sync
+   * Manually triggers an immediate synchronization of real-time quotes from the live market provider.
+   */
+  router.post('/market/live-sync', async (_req: Request, res: Response) => {
+    if (!liveMarketService) {
+      res.status(503).json({
+        success: false,
+        error: { code: 'SERVICE_UNAVAILABLE', message: 'Live market service is not available' },
+        timestamp: new Date().toISOString(),
+      });
+      return;
+    }
+
+    const updatedCount = await liveMarketService.syncQuotes();
+    res.json({
+      success: true,
+      message: `Successfully synced ${updatedCount} live market instruments`,
+      data: liveMarketService.getStatus(),
       timestamp: new Date().toISOString(),
     });
   });

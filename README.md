@@ -290,6 +290,7 @@ Instead of a single monolithic frontend, Foliolive is split into **four independ
 ### Backend Microservices
 
 - **BFF (Backend for Frontend) — Node.js 20 & Express**: High-concurrency gateway managing WebSocket connections, rate limiting, and in-memory geometric Brownian motion market simulation.
+- **Live Financial Market Data Service**: Native multi-provider engine streaming real-world stock prices from live financial markets (Yahoo Finance free quote provider and optional Finnhub WebSocket). Automatically calibrates simulated portfolios to actual market prices while maintaining continuous 60 FPS micro-tick animations.
 - **Realtime Gateway (`ws`)**: Native WebSocket server broadcasting coalesced price updates in 100ms batch windows.
 - **Core Domain API — Java 21 & Spring Boot 3.3**: Enterprise-grade service layer featuring Spring Security JWT, Spring Data JPA, and Hibernate.
 - **PostgreSQL 16**: Relational database with automated database schema versioning via **Flyway Migrations**.

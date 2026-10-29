@@ -98,7 +98,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'TECHNOLOGY',
         currency: 'USD',
-        initialPrice: 185.5,
+        initialPrice: 343.83,
         annualizedVolatility: 0.22,
         drift: 0.08,
         tickSize: 0.01,
@@ -109,7 +109,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'TECHNOLOGY',
         currency: 'USD',
-        initialPrice: 420.2,
+        initialPrice: 531.01,
         annualizedVolatility: 0.2,
         drift: 0.1,
         tickSize: 0.01,
@@ -120,7 +120,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'TECHNOLOGY',
         currency: 'USD',
-        initialPrice: 125.0,
+        initialPrice: 215.38,
         annualizedVolatility: 0.45,
         drift: 0.25,
         tickSize: 0.01,
@@ -131,7 +131,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'TECHNOLOGY',
         currency: 'USD',
-        initialPrice: 175.8,
+        initialPrice: 324.89,
         annualizedVolatility: 0.24,
         drift: 0.09,
         tickSize: 0.01,
@@ -142,7 +142,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'TECHNOLOGY',
         currency: 'USD',
-        initialPrice: 492.4,
+        initialPrice: 612.49,
         annualizedVolatility: 0.35,
         drift: 0.15,
         tickSize: 0.01,
@@ -155,7 +155,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'FINANCIALS',
         currency: 'USD',
-        initialPrice: 198.6,
+        initialPrice: 339.3,
         annualizedVolatility: 0.18,
         drift: 0.07,
         tickSize: 0.01,
@@ -166,7 +166,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'FINANCIALS',
         currency: 'USD',
-        initialPrice: 460.0,
+        initialPrice: 925.17,
         annualizedVolatility: 0.23,
         drift: 0.08,
         tickSize: 0.01,
@@ -177,7 +177,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'FINANCIALS',
         currency: 'USD',
-        initialPrice: 98.4,
+        initialPrice: 190.13,
         annualizedVolatility: 0.21,
         drift: 0.06,
         tickSize: 0.01,
@@ -188,7 +188,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'FINANCIALS',
         currency: 'USD',
-        initialPrice: 39.8,
+        initialPrice: 50.85,
         annualizedVolatility: 0.22,
         drift: 0.05,
         tickSize: 0.01,
@@ -201,7 +201,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'HEALTHCARE',
         currency: 'USD',
-        initialPrice: 156.2,
+        initialPrice: 271.04,
         annualizedVolatility: 0.14,
         drift: 0.04,
         tickSize: 0.01,
@@ -212,7 +212,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'HEALTHCARE',
         currency: 'USD',
-        initialPrice: 28.4,
+        initialPrice: 29.45,
         annualizedVolatility: 0.2,
         drift: 0.02,
         tickSize: 0.01,
@@ -223,7 +223,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'HEALTHCARE',
         currency: 'USD',
-        initialPrice: 504.0,
+        initialPrice: 407.1,
         annualizedVolatility: 0.17,
         drift: 0.08,
         tickSize: 0.01,
@@ -234,7 +234,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'HEALTHCARE',
         currency: 'USD',
-        initialPrice: 820.5,
+        initialPrice: 1288.3,
         annualizedVolatility: 0.28,
         drift: 0.18,
         tickSize: 0.01,
@@ -247,7 +247,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'CONSUMER_DISCRETIONARY',
         currency: 'USD',
-        initialPrice: 182.4,
+        initialPrice: 254.6,
         annualizedVolatility: 0.28,
         drift: 0.12,
         tickSize: 0.01,
@@ -258,7 +258,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'CONSUMER_DISCRETIONARY',
         currency: 'USD',
-        initialPrice: 188.6,
+        initialPrice: 404.22,
         annualizedVolatility: 0.52,
         drift: 0.1,
         tickSize: 0.01,
@@ -269,7 +269,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'CONSUMER_DISCRETIONARY',
         currency: 'USD',
-        initialPrice: 342.1,
+        initialPrice: 317.56,
         annualizedVolatility: 0.18,
         drift: 0.06,
         tickSize: 0.01,
@@ -280,7 +280,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'CONSUMER_DISCRETIONARY',
         currency: 'USD',
-        initialPrice: 94.2,
+        initialPrice: 37.15,
         annualizedVolatility: 0.24,
         drift: 0.04,
         tickSize: 0.01,
@@ -293,7 +293,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'ENERGY',
         currency: 'USD',
-        initialPrice: 118.5,
+        initialPrice: 182.02,
         annualizedVolatility: 0.22,
         drift: 0.07,
         tickSize: 0.01,
@@ -304,7 +304,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'ENERGY',
         currency: 'USD',
-        initialPrice: 158.2,
+        initialPrice: 229.2,
         annualizedVolatility: 0.21,
         drift: 0.06,
         tickSize: 0.01,
@@ -315,7 +315,7 @@ export class MarketSimulator {
         assetClass: 'EQUITY',
         sector: 'ENERGY',
         currency: 'USD',
-        initialPrice: 48.6,
+        initialPrice: 53.75,
         annualizedVolatility: 0.3,
         drift: 0.05,
         tickSize: 0.01,
@@ -328,7 +328,7 @@ export class MarketSimulator {
         assetClass: 'FIXED_INCOME',
         sector: 'FINANCIALS',
         currency: 'USD',
-        initialPrice: 72.4,
+        initialPrice: 71.19,
         annualizedVolatility: 0.06,
         drift: 0.03,
         tickSize: 0.01,
@@ -339,7 +339,7 @@ export class MarketSimulator {
         assetClass: 'FIXED_INCOME',
         sector: 'FINANCIALS',
         currency: 'USD',
-        initialPrice: 91.2,
+        initialPrice: 80.99,
         annualizedVolatility: 0.12,
         drift: 0.03,
         tickSize: 0.01,
@@ -350,7 +350,7 @@ export class MarketSimulator {
         assetClass: 'FIXED_INCOME',
         sector: 'FINANCIALS',
         currency: 'USD',
-        initialPrice: 77.8,
+        initialPrice: 77.59,
         annualizedVolatility: 0.09,
         drift: 0.05,
         tickSize: 0.01,
@@ -361,7 +361,7 @@ export class MarketSimulator {
         assetClass: 'FIXED_INCOME',
         sector: 'FINANCIALS',
         currency: 'USD',
-        initialPrice: 97.6,
+        initialPrice: 95.89,
         annualizedVolatility: 0.05,
         drift: 0.03,
         tickSize: 0.01,
@@ -374,7 +374,7 @@ export class MarketSimulator {
         assetClass: 'COMMODITY',
         sector: 'ENERGY',
         currency: 'USD',
-        initialPrice: 215.3,
+        initialPrice: 373.51,
         annualizedVolatility: 0.15,
         drift: 0.06,
         tickSize: 0.01,
@@ -385,7 +385,7 @@ export class MarketSimulator {
         assetClass: 'COMMODITY',
         sector: 'ENERGY',
         currency: 'USD',
-        initialPrice: 28.2,
+        initialPrice: 49.06,
         annualizedVolatility: 0.26,
         drift: 0.07,
         tickSize: 0.01,
@@ -396,7 +396,7 @@ export class MarketSimulator {
         assetClass: 'COMMODITY',
         sector: 'ENERGY',
         currency: 'USD',
-        initialPrice: 76.5,
+        initialPrice: 166.57,
         annualizedVolatility: 0.38,
         drift: 0.04,
         tickSize: 0.01,
@@ -581,6 +581,62 @@ export class MarketSimulator {
 
     this.notifyShock(shock);
     return shock;
+  }
+
+  /**
+   * Ingests a real-time market quote from an external provider (Yahoo Finance / Finnhub).
+   * Updates current price, baseline, high/low/volume, and notifies WebSocket clients.
+   */
+  public updateLivePrice(
+    symbol: string,
+    livePrice: number,
+    prevClose?: number,
+    high?: number,
+    low?: number,
+    volume?: number
+  ): MarketTick | null {
+    const sym = symbol.toUpperCase();
+    const config = this.configs.get(sym);
+    if (!config) return null;
+
+    const basePrice = prevClose ?? this.basePrices.get(sym) ?? config.initialPrice;
+    const currentHigh = Math.max(this.highs.get(sym) || livePrice, high || livePrice);
+    const currentLow = Math.min(this.lows.get(sym) || livePrice, low || livePrice);
+    const currentVolume = volume ?? (this.volumes.get(sym) || 100000) + 100;
+
+    this.prices.set(sym, livePrice);
+    this.highs.set(sym, currentHigh);
+    this.lows.set(sym, currentLow);
+    this.volumes.set(sym, currentVolume);
+    if (prevClose !== undefined) {
+      this.basePrices.set(sym, prevClose);
+    }
+
+    const change = Number((livePrice - basePrice).toFixed(2));
+    const changePercent = Number(((change / basePrice) * 100).toFixed(2));
+    const spread = Number((livePrice * 0.0003).toFixed(2)) || 0.01;
+    const bid = Number((livePrice - spread / 2).toFixed(2));
+    const ask = Number((livePrice + spread / 2).toFixed(2));
+
+    const tick: MarketTick = {
+      symbol: sym,
+      price: livePrice,
+      bid,
+      ask,
+      volume: currentVolume,
+      change,
+      changePercent,
+      high: currentHigh,
+      low: currentLow,
+      open: basePrice,
+      previousClose: basePrice,
+      timestamp: new Date().toISOString(),
+    };
+
+    this.lastTicks.set(sym, tick);
+    this.notifyTick(tick);
+    this.notifyBatch([tick]);
+    return tick;
   }
 
   // Simulator lifecycle controls

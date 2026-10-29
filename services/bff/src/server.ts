@@ -21,6 +21,7 @@ import {
 import { MarketSimulator } from './simulator';
 import { RealtimeEngine } from './realtime-engine';
 import { WebSocketGateway } from './websocket';
+import { LiveMarketService } from './live-market-service';
 import rateLimit from 'express-rate-limit';
 import { createAuthRouter } from './routes/auth.routes';
 import { createApiRouter } from './routes/api.routes';
@@ -96,6 +97,7 @@ export interface BffServerInstance {
   simulator: MarketSimulator;
   realtimeEngine: RealtimeEngine;
   wsGateway: WebSocketGateway;
+  liveMarketService: LiveMarketService;
   start: (port?: number) => Promise<http.Server>;
   stop: () => Promise<void>;
 }
@@ -286,6 +288,9 @@ export function createBffServer(options?: {
   );
   const realtimeEngine = new RealtimeEngine(simulator);
 
+  // Instantiate Live Financial Market Service (Yahoo Finance / Finnhub)
+  const liveMarketService = new LiveMarketService(simulator, config.liveMarket);
+
   // Instantiate WebSocket Gateway
   const wsGateway = new WebSocketGateway(server, simulator, realtimeEngine);
 
@@ -293,7 +298,7 @@ export function createBffServer(options?: {
   app.use('/auth', createAuthRouter());
 
   // Mount Aggregation & Simulator API routes: /api/portfolio-overview, /api/market-overview, etc.
-  app.use('/api', apiLimiter, createApiRouter(simulator, realtimeEngine));
+  app.use('/api', apiLimiter, createApiRouter(simulator, realtimeEngine, liveMarketService));
 
   // =========================================================================
   // Unified Production Gateway: Single-Link Static Serving & SPA Routing
@@ -378,6 +383,7 @@ export function createBffServer(options?: {
           `Foliolive BFF & WebSocket Server listening on http://${config.host}:${port}`
         );
         simulator.start();
+        void liveMarketService.start();
         resolve(server);
       });
     });
@@ -385,6 +391,7 @@ export function createBffServer(options?: {
 
   const stop = (): Promise<void> => {
     return new Promise((resolve) => {
+      liveMarketService.stop();
       simulator.stop();
       wsGateway.close();
       server.close(() => {
@@ -400,6 +407,7 @@ export function createBffServer(options?: {
     simulator,
     realtimeEngine,
     wsGateway,
+    liveMarketService,
     start,
     stop,
   };

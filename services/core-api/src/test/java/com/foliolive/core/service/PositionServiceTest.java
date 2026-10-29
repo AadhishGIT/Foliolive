@@ -68,15 +68,15 @@ class PositionServiceTest {
         PositionDto dto = result.getContent().get(0);
         assertThat(dto.symbol()).isEqualTo("AAPL");
         assertThat(dto.quantity()).isEqualByComparingTo(BigDecimal.valueOf(100));
-        // AAPL mark price is 185.50
-        // market value = 100 * 185.50 = 18550.00
+        // AAPL mark price is 343.83
+        // market value = 100 * 343.83 = 34383.00
         // cost basis = 100 * 150.00 = 15000.00
-        // unrealized PnL = 18550 - 15000 = 3550.00
-        // unrealized PnL % = (3550 / 15000) * 100 = 23.67%
-        assertThat(dto.currentPrice()).isEqualByComparingTo(BigDecimal.valueOf(185.50));
-        assertThat(dto.marketValue()).isEqualByComparingTo(BigDecimal.valueOf(18550.00));
-        assertThat(dto.unrealizedPnL()).isEqualByComparingTo(BigDecimal.valueOf(3550.00));
-        assertThat(dto.unrealizedPnLPercent()).isEqualByComparingTo(BigDecimal.valueOf(23.67));
+        // unrealized PnL = 34383 - 15000 = 19383.00
+        // unrealized PnL % = (19383 / 15000) * 100 = 129.22%
+        assertThat(dto.currentPrice()).isEqualByComparingTo(BigDecimal.valueOf(343.83));
+        assertThat(dto.marketValue()).isEqualByComparingTo(BigDecimal.valueOf(34383.00));
+        assertThat(dto.unrealizedPnL()).isEqualByComparingTo(BigDecimal.valueOf(19383.00));
+        assertThat(dto.unrealizedPnLPercent()).isEqualByComparingTo(BigDecimal.valueOf(129.22));
     }
 
     @Test
