@@ -29,7 +29,7 @@ describe('DeltaValue Financial Component', () => {
 
     const delta = screen.getByLabelText(/unchanged of \$0\.00 \(0\.00 percent\)/i);
     expect(delta).toBeInTheDocument();
-    expect(delta).toHaveClass('text-slate-600');
+    expect(delta).toHaveClass('text-slate-700');
   });
 
   it('never relies on color alone (includes sign, symbol, and screen reader text)', () => {

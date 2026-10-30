@@ -304,7 +304,7 @@ export function VirtualizedGrid({
 
         <div className="flex items-center gap-2">
           {/* Virtual Performance Telemetry */}
-          <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400 hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-slate-900/80 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-800">
+          <div className="text-[11px] font-mono text-slate-700 dark:text-slate-300 hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-slate-900/80 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-800">
             <span>
               Rows:{' '}
               <strong className="text-slate-900 dark:text-white">
@@ -314,7 +314,7 @@ export function VirtualizedGrid({
             <span>•</span>
             <span>
               Rendered DOM:{' '}
-              <strong className="text-emerald-700 dark:text-emerald-400">
+              <strong className="text-emerald-800 dark:text-emerald-300">
                 {virtualItems.length}
               </strong>
             </span>
@@ -415,17 +415,26 @@ export function VirtualizedGrid({
                 onClick={() => handleSort(col.sortField)}
                 className={`p-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1.5 ${
                   col.align === 'right' ? 'justify-end' : 'justify-start'
-                } ${selectedColIndex === cIdx ? 'bg-slate-200/60 dark:bg-slate-800/40 text-blue-700 dark:text-blue-400 font-semibold' : ''}`}
+                } ${selectedColIndex === cIdx ? 'bg-slate-200/60 dark:bg-slate-800/40 text-blue-800 dark:text-blue-400 font-semibold' : ''}`}
               >
                 <span>{col.label}</span>
                 {col.sortField && (
-                  <span className="text-slate-600 dark:text-slate-400">
+                  <span className="text-slate-600 dark:text-slate-400" aria-hidden="true">
                     {sortField === col.sortField && sortDirection === 'asc' ? (
-                      <ArrowUp className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                      <ArrowUp
+                        className="w-3 h-3 text-blue-600 dark:text-blue-400"
+                        aria-hidden="true"
+                      />
                     ) : sortField === col.sortField && sortDirection === 'desc' ? (
-                      <ArrowDown className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                      <ArrowDown
+                        className="w-3 h-3 text-blue-600 dark:text-blue-400"
+                        aria-hidden="true"
+                      />
                     ) : (
-                      <ArrowUpDown className="w-3 h-3 opacity-30 hover:opacity-100" />
+                      <ArrowUpDown
+                        className="w-3 h-3 opacity-40 hover:opacity-100"
+                        aria-hidden="true"
+                      />
                     )}
                   </span>
                 )}
@@ -544,7 +553,7 @@ const CellContent = React.memo(function CellContent({
 
     case 'sector':
       return (
-        <span className="text-[11px] text-slate-600 dark:text-slate-400 font-sans truncate">
+        <span className="text-[11px] text-slate-700 dark:text-slate-300 font-sans truncate">
           {row.sector.replace('_', ' ')}
         </span>
       );
@@ -563,7 +572,7 @@ const CellContent = React.memo(function CellContent({
 
     case 'entryPrice':
       return (
-        <span className="text-slate-600 dark:text-slate-400">${row.entryPrice.toFixed(2)}</span>
+        <span className="text-slate-700 dark:text-slate-300">${row.entryPrice.toFixed(2)}</span>
       );
 
     case 'markPrice':
@@ -572,8 +581,8 @@ const CellContent = React.memo(function CellContent({
           className={`font-bold transition-colors duration-700 ${
             isUpdated
               ? row.dailyChange >= 0
-                ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-1 rounded'
-                : 'bg-rose-500/20 text-rose-700 dark:text-rose-400 px-1 rounded'
+                ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-1 rounded'
+                : 'bg-rose-500/20 text-rose-800 dark:text-rose-300 px-1 rounded'
               : 'text-slate-900 dark:text-white'
           }`}
         >
@@ -603,7 +612,7 @@ const CellContent = React.memo(function CellContent({
 
     case 'weightPercent':
       return (
-        <span className="text-slate-600 dark:text-slate-400">{row.weightPercent.toFixed(2)}%</span>
+        <span className="text-slate-700 dark:text-slate-300">{row.weightPercent.toFixed(2)}%</span>
       );
 
     default:

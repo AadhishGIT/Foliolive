@@ -62,7 +62,7 @@ export const DeltaValue = React.forwardRef<HTMLSpanElement, DeltaValueProps>(
       ? 'text-emerald-700 dark:text-emerald-400'
       : isNegative
         ? 'text-red-700 dark:text-red-400'
-        : 'text-slate-600 dark:text-slate-400';
+        : 'text-slate-700 dark:text-slate-300';
 
     const pctDecimals = percentageDecimals ?? (formatAs === 'currency' ? 2 : decimals);
 
@@ -95,7 +95,7 @@ export const DeltaValue = React.forwardRef<HTMLSpanElement, DeltaValueProps>(
           {formattedValue}
         </span>
         {percentage !== undefined && (
-          <span className="text-xs opacity-90 ml-0.5" aria-hidden="true">
+          <span className="text-xs ml-0.5" aria-hidden="true">
             ({sign}
             {absPercentage?.toFixed(pctDecimals)}%)
           </span>

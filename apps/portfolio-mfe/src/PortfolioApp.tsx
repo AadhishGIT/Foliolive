@@ -277,11 +277,14 @@ export function PortfolioApp({
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Layers className="w-4 h-4 text-emerald-400" />
+                <Layers
+                  className="w-4 h-4 text-emerald-700 dark:text-emerald-400"
+                  aria-hidden="true"
+                />
                 Live Holdings Matrix (TanStack Virtualized Grid)
               </CardTitle>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-600 dark:text-slate-400 font-mono hidden sm:inline">
+                <span className="text-xs text-slate-700 dark:text-slate-300 font-mono hidden sm:inline">
                   Interactive ARIA Grid Pattern
                 </span>
                 <Button
