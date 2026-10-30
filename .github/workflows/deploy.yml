@@ -210,10 +210,28 @@ jobs:
               fi
             fi
 
-            echo "🔄 [3/3] Invalidating CloudFront Edge Cache..."
+            echo "🔄 [3/4] Invalidating CloudFront Edge Cache..."
             DIST_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(DomainName, '${CLOUDFRONT_DOMAIN#https://}')].Id" --output text || true)
             if [ -n "$DIST_ID" ] && [ "$DIST_ID" != "None" ]; then
               aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
+            fi
+
+            echo "🚀 [4/4] Refreshing EC2 Backend Containers via AWS SSM..."
+            aws ssm send-command \
+              --document-name "AWS-RunShellScript" \
+              --targets "Key=tag:Name,Values=foliolive-backend-ec2" \
+              --parameters 'commands=["cd /opt/foliolive && docker compose pull && docker compose up -d"]' \
+              --comment "Auto-update Foliolive container images on EC2" \
+              --region "${AWS_REGION}" || true
+
+            echo "📊 Calibrating Live Market Simulator & Baseline Prices..."
+            if [ -n "$DEMO_URL" ] && [ "$DEMO_URL" != "https://foliolive.internal" ]; then
+              sleep 10
+              curl -fsSL -X POST "${DEMO_URL}/api/simulator/control" \
+                -H "Content-Type: application/json" \
+                -d '{"resetPrices": true}' || true
+              curl -fsSL -X POST "${DEMO_URL}/api/market/live-sync" \
+                -H "Content-Type: application/json" || true
             fi
 
             echo "### 🚀 Foliolive Live AWS Deployment Success!" >> $GITHUB_STEP_SUMMARY
@@ -242,6 +260,9 @@ jobs:
           if [ -n "$TARGET_URL" ] && [ "$TARGET_URL" != "https://foliolive.internal" ]; then
             echo "Pinging health on live URL ${TARGET_URL}/health ..."
             curl -fsSL --retry 5 --retry-delay 5 "${TARGET_URL}/health" || echo "Note: Initial DNS propagation might take 1-2 minutes."
+            echo "Checking simulator and market endpoints..."
+            curl -fsSL --retry 3 --retry-delay 3 "${TARGET_URL}/api/simulator/status" || true
+            curl -fsSL --retry 3 --retry-delay 3 "${TARGET_URL}/api/market-overview" || true
           else
             echo "Local/internal pipeline verification passed."
           fi

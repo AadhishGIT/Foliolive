@@ -8,6 +8,7 @@ export interface DeltaValueProps extends React.HTMLAttributes<HTMLSpanElement> {
   formatAs?: 'currency' | 'percent' | 'number';
   currency?: string;
   decimals?: number;
+  percentageDecimals?: number;
   showArrow?: boolean;
   showSign?: boolean;
   neutralThreshold?: number;
@@ -22,6 +23,7 @@ export const DeltaValue = React.forwardRef<HTMLSpanElement, DeltaValueProps>(
       formatAs = 'currency',
       currency = 'USD',
       decimals = 2,
+      percentageDecimals,
       showArrow = true,
       showSign = true,
       neutralThreshold = 0.0001,
@@ -62,10 +64,12 @@ export const DeltaValue = React.forwardRef<HTMLSpanElement, DeltaValueProps>(
         ? 'text-red-700 dark:text-red-400'
         : 'text-slate-600 dark:text-slate-400';
 
+    const pctDecimals = percentageDecimals ?? (formatAs === 'currency' ? 2 : decimals);
+
     // Screen reader accessible explanation
     const actionWord = isPositive ? 'gain' : isNegative ? 'loss' : 'unchanged';
     const accessibleLabel = `${actionWord} of ${sign}${formattedValue}${
-      absPercentage !== undefined ? ` (${absPercentage.toFixed(2)} percent)` : ''
+      absPercentage !== undefined ? ` (${absPercentage.toFixed(pctDecimals)} percent)` : ''
     }`;
 
     return (
@@ -93,7 +97,7 @@ export const DeltaValue = React.forwardRef<HTMLSpanElement, DeltaValueProps>(
         {percentage !== undefined && (
           <span className="text-xs opacity-90 ml-0.5" aria-hidden="true">
             ({sign}
-            {absPercentage?.toFixed(decimals)}%)
+            {absPercentage?.toFixed(pctDecimals)}%)
           </span>
         )}
       </span>

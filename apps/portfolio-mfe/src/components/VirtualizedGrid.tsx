@@ -91,7 +91,7 @@ const ALL_COLUMNS: ColumnDefinition[] = [
     sortField: 'marketValue',
     align: 'right',
     defaultVisible: true,
-    minWidth: 130,
+    minWidth: 135,
   },
   {
     id: 'unrealizedPnL',
@@ -99,7 +99,7 @@ const ALL_COLUMNS: ColumnDefinition[] = [
     sortField: 'unrealizedPnL',
     align: 'right',
     defaultVisible: true,
-    minWidth: 140,
+    minWidth: 185,
   },
   {
     id: 'dailyChangePercent',
@@ -402,7 +402,14 @@ export function VirtualizedGrid({
                 }
                 style={{
                   width: col.minWidth ? `${col.minWidth}px` : '120px',
-                  flex: col.id === 'name' ? 2 : 1,
+                  flex:
+                    col.id === 'name'
+                      ? 2
+                      : col.id === 'unrealizedPnL'
+                        ? 1.5
+                        : col.id === 'marketValue'
+                          ? 1.2
+                          : 1,
                   textAlign: col.align || 'left',
                 }}
                 onClick={() => handleSort(col.sortField)}
@@ -483,10 +490,17 @@ export function VirtualizedGrid({
                         tabIndex={-1}
                         style={{
                           width: col.minWidth ? `${col.minWidth}px` : '120px',
-                          flex: col.id === 'name' ? 2 : 1,
+                          flex:
+                            col.id === 'name'
+                              ? 2
+                              : col.id === 'unrealizedPnL'
+                                ? 1.5
+                                : col.id === 'marketValue'
+                                  ? 1.2
+                                  : 1,
                           textAlign: col.align || 'left',
                         }}
-                        className={`p-3 truncate ${
+                        className={`p-3 ${col.id === 'unrealizedPnL' ? 'whitespace-nowrap overflow-visible' : 'truncate'} ${
                           isCellFocused ? 'ring-1 ring-blue-500 rounded-sm' : ''
                         }`}
                       >
@@ -580,6 +594,7 @@ const CellContent = React.memo(function CellContent({
           value={row.unrealizedPnL}
           percentage={row.unrealizedPnLPercent}
           formatAs="currency"
+          decimals={0}
         />
       );
 

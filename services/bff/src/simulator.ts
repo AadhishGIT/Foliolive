@@ -442,6 +442,7 @@ export class MarketSimulator {
     this.totalTicks = 0;
     for (const [symbol, config] of this.configs) {
       this.prices.set(symbol, config.initialPrice);
+      this.basePrices.set(symbol, config.initialPrice);
       this.highs.set(symbol, config.initialPrice);
       this.lows.set(symbol, config.initialPrice);
       this.volumes.set(symbol, 100000);
@@ -482,7 +483,7 @@ export class MarketSimulator {
 
     const updatedTicks: MarketTick[] = [];
 
-    // 3. Update each instrument price via GBM + Sector Factor Model
+    // 3. Update each instrument price via GBM + Mean-Reversion + Sector Factor Model
     for (const [symbol, config] of this.configs) {
       const currentPrice = this.prices.get(symbol) || config.initialPrice;
       const basePrice = this.basePrices.get(symbol) || config.initialPrice;
@@ -493,11 +494,14 @@ export class MarketSimulator {
       // Correlated standard normal: Z_eff = sqrt(rho)*Z_sector + sqrt(1-rho)*Z_idio
       const zEff = Math.sqrt(rho) * sectorZ + Math.sqrt(1 - rho) * idioZ;
 
-      // Continuous Geometric Brownian Motion log-return:
-      // S_{t+dt} = S_t * exp((mu - 0.5*sigma^2)*dt + sigma*sqrt(dt)*Z_eff)
+      // Continuous Geometric Brownian Motion log-return with Ornstein-Uhlenbeck mean-reversion
+      // towards live base price (S_base) to prevent unbounded multi-day random walk divergence:
+      // d ln(S) = [(mu - 0.5*sigma^2) + kappa * ln(S_base / S)] dt + sigma * sqrt(dt) * Z_eff
       const mu = config.drift;
       const sigma = config.annualizedVolatility;
-      const driftTerm = (mu - 0.5 * sigma * sigma) * dt;
+      const kappa = 2.0; // Mean-reversion intensity keeping ticks centered on real market price
+      const meanReversionDrift = kappa * Math.log(basePrice / currentPrice) * dt;
+      const driftTerm = (mu - 0.5 * sigma * sigma) * dt + meanReversionDrift;
       const diffusionTerm = sigma * Math.sqrt(dt) * zEff;
 
       let logReturn = driftTerm + diffusionTerm;
@@ -509,9 +513,11 @@ export class MarketSimulator {
 
       let newPrice = currentPrice * Math.exp(logReturn);
 
-      // Guardrail: avoid negative or extreme prices (< 10% or > 1000% initial)
-      if (newPrice < config.initialPrice * 0.1) newPrice = config.initialPrice * 0.1;
-      if (newPrice > config.initialPrice * 10.0) newPrice = config.initialPrice * 10.0;
+      // Guardrail: bound within +/- 15% of base price to prevent unrealistic long-run decay or explosion
+      const minPrice = Number((basePrice * 0.85).toFixed(2));
+      const maxPrice = Number((basePrice * 1.15).toFixed(2));
+      if (newPrice < minPrice) newPrice = minPrice;
+      if (newPrice > maxPrice) newPrice = maxPrice;
 
       // Round to tickSize
       newPrice = Math.round(newPrice / config.tickSize) * config.tickSize;
